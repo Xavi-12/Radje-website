@@ -10,17 +10,13 @@ const nameInput = document.getElementById("nameInput") as HTMLInputElement;
 const imageInput = document.getElementById("imageInput") as HTMLInputElement;
 const addBtn = document.getElementById("addBtn") as HTMLButtonElement;
 const spinBtn = document.getElementById("spinBtn") as HTMLButtonElement;
-const nameList = document.getElementById("nameList") as HTMLDivElement;
-const popup = document.getElementById("popup") as HTMLDivElement;
-const popupTitle = document.getElementById("popupTitle") as HTMLHeadingElement;
-const popupImage = document.getElementById("popupImage") as HTMLImageElement;
-const removeBtn = document.getElementById("removeBtn") as HTMLButtonElement;
-const keepBtn = document.getElementById("keepBtn") as HTMLButtonElement;
+const result = document.getElementById("result") as HTMLDivElement;
+const winnerImage = document.getElementById("winnerImage") as HTMLImageElement;
+const entriesList = document.getElementById("entriesList") as HTMLDivElement;
 
 let entries: Entry[] = [];
 let angle = 0;
 let isSpinning = false;
-let currentWinner: Entry | null = null;
 
 function getRandomColor(): string {
   const letters = "0123456789ABCDEF";
@@ -34,7 +30,6 @@ function getRandomColor(): string {
 function drawWheel(currentAngle: number) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const total = entries.length;
-  if (total === 0) return;
   const arc = (2 * Math.PI) / total;
 
   for (let i = 0; i < total; i++) {
@@ -48,6 +43,7 @@ function drawWheel(currentAngle: number) {
     ctx.arc(250, 250, 250, startAngle, endAngle);
     ctx.fill();
 
+    // Tekst op sector
     ctx.save();
     ctx.translate(250, 250);
     ctx.rotate(startAngle + arc / 2);
@@ -57,12 +53,23 @@ function drawWheel(currentAngle: number) {
     ctx.fillText(entry.name, 230, 10);
     ctx.restore();
   }
+
+  // Pointer
+  ctx.fillStyle = "#000";
+  ctx.beginPath();
+  ctx.moveTo(250, 0);
+  ctx.lineTo(240, 20);
+  ctx.lineTo(260, 20);
+  ctx.fill();
 }
 
 function spinWheel() {
   if (isSpinning || entries.length === 0) return;
 
   isSpinning = true;
+  result.textContent = "";
+  winnerImage.style.display = "none";
+
   const spinAngle = Math.random() * 360 + 360 * 5;
   const duration = 4000;
   const start = performance.now();
@@ -87,30 +94,51 @@ function spinWheel() {
 }
 
 function detectWinner() {
-  const total = entries.length;
-  const arc = 360 / total;
-  const normalizedAngle = (angle % 360 + 360) % 360;
-  const index = Math.floor((360 - normalizedAngle + arc / 2) % 360 / arc);
-  const winner = entries[index];
-  if (!winner) return;
-  currentWinner = winner;
-  popupTitle.textContent = `🎉 Winnaar: ${winner.name}`;
-  popupImage.src = winner.imageUrl;
-  popup.style.display = "flex";
+  const pointerX = 250;
+  const pointerY = 20;
+  const pixel = ctx.getImageData(pointerX, pointerY, 1, 1).data;
+  const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
+
+  const winner = entries.find(e => e.color.toUpperCase() === rgb);
+  if (winner) {
+    result.textContent = `🎉 Winnaar: ${winner.name}`;
+    winnerImage.src = winner.imageUrl;
+    winnerImage.style.display = "block";
+  } else {
+    result.textContent = "Geen winnaar gedetecteerd.";
+  }
 }
 
-function updateNameList() {
-  nameList.innerHTML = "";
-  entries.forEach(entry => {
+function toHex(n: number): string {
+  return n.toString(16).padStart(2, '0');
+}
+
+function updateEntriesList() {
+  entriesList.innerHTML = "";
+
+  entries.forEach((entry, index) => {
     const card = document.createElement("div");
-    card.className = "name-card";
+    card.className = "entry-card";
+
     const img = document.createElement("img");
     img.src = entry.imageUrl;
-    const text = document.createElement("div");
-    text.textContent = entry.name;
+    img.alt = entry.name;
+
+    const name = document.createElement("div");
+    name.textContent = entry.name;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "Verwijder";
+    removeBtn.onclick = () => {
+      entries.splice(index, 1);
+      drawWheel((angle * Math.PI) / 180);
+      updateEntriesList();
+    };
+
     card.appendChild(img);
-    card.appendChild(text);
-    nameList.appendChild(card);
+    card.appendChild(name);
+    card.appendChild(removeBtn);
+    entriesList.appendChild(card);
   });
 }
 
@@ -131,22 +159,9 @@ addBtn.addEventListener("click", () => {
     nameInput.value = "";
     imageInput.value = "";
     drawWheel((angle * Math.PI) / 180);
-    updateNameList();
+    updateEntriesList();
   };
   reader.readAsDataURL(file);
 });
 
 spinBtn.addEventListener("click", spinWheel);
-
-removeBtn.addEventListener("click", () => {
-  if (currentWinner) {
-    entries = entries.filter(e => e !== currentWinner);
-    drawWheel((angle * Math.PI) / 180);
-    updateNameList();
-  }
-  popup.style.display = "none";
-});
-
-keepBtn.addEventListener("click", () => {
-  popup.style.display = "none";
-});
