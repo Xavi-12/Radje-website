@@ -1,0 +1,34 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f0f0f0;
+}
+
+.wheel-container {
+    margin: 40px auto;
+    width: 400px;
+    position: relative;
+}
+
+#wheel {
+    border: 8px solid #333;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+#spin-btn {
+    margin-top: 20px;
+    padding: 10px 30px;
+    font-size: 1.2em;
+    background: #ff9800;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#spin-btn:hover {
+    background: #e67e22;
+}
