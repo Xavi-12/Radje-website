@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wheel of Names</title>
+  <title>Wheel of Names & Images</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,18 +11,16 @@
     <canvas id="wheel" width="500" height="500"></canvas>
 
     <div class="input-section">
-      <input id="nameInput" type="text" placeholder="Naam..." />
-      <input id="photoInput" type="file" accept="image/*" />
-      <button id="addNameBtn">Voeg toe</button>
+      <input id="nameInput" type="text" placeholder="Naam invoeren..." />
+      <input id="imageInput" type="file" accept="image/*" />
+      <button id="addBtn">Voeg toe</button>
     </div>
-
-    <ul id="nameList"></ul>
 
     <button id="spinBtn">Draai het wiel!</button>
     <div id="result"></div>
+    <img id="winnerImage" />
   </div>
 
-  <script type="module" src="main.js"></script>
+  <script type="module" src="main.ts"></script>
 </body>
 </html>
-

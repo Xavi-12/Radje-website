@@ -1,80 +1,74 @@
+// main.ts
+interface Entry {
+  name: string;
+  color: string;
+  imageUrl: string;
+}
+
 const canvas = document.getElementById("wheel") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
-const spinBtn = document.getElementById("spinBtn") as HTMLButtonElement;
-const addNameBtn = document.getElementById("addNameBtn") as HTMLButtonElement;
 const nameInput = document.getElementById("nameInput") as HTMLInputElement;
-const nameList = document.getElementById("nameList")!;
+const imageInput = document.getElementById("imageInput") as HTMLInputElement;
+const addBtn = document.getElementById("addBtn") as HTMLButtonElement;
+const spinBtn = document.getElementById("spinBtn") as HTMLButtonElement;
 const result = document.getElementById("result") as HTMLDivElement;
+const winnerImage = document.getElementById("winnerImage") as HTMLImageElement;
 
-type Person = { name: string; photo: string };
-
-let names: Person[] = [];
+let entries: Entry[] = [];
 let angle = 0;
 let isSpinning = false;
 
+function getRandomColor(): string {
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
 function drawWheel(currentAngle: number) {
-  const total = names.length || 1;
-  const arc = (2 * Math.PI) / total;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const total = entries.length;
+  const arc = (2 * Math.PI) / total;
 
   for (let i = 0; i < total; i++) {
+    const entry = entries[i];
     const startAngle = arc * i + currentAngle;
     const endAngle = startAngle + arc;
 
     ctx.beginPath();
-    ctx.fillStyle = i % 2 === 0 ? "#ffcc00" : "#ff6600";
+    ctx.fillStyle = entry.color;
     ctx.moveTo(250, 250);
     ctx.arc(250, 250, 250, startAngle, endAngle);
     ctx.fill();
 
+    // Tekst op sector
     ctx.save();
     ctx.translate(250, 250);
     ctx.rotate(startAngle + arc / 2);
     ctx.textAlign = "right";
     ctx.fillStyle = "#000";
-    ctx.font = "20px Arial";
-    ctx.fillText(names[i]?.name || "Voeg namen toe", 230, 10);
+    ctx.font = "18px Arial";
+    ctx.fillText(entry.name, 230, 10);
     ctx.restore();
   }
 
-  // Pointer rechts (3 uur richting)
   ctx.fillStyle = "#000";
   ctx.beginPath();
-  ctx.moveTo(500, 250);
-  ctx.lineTo(480, 240);
-  ctx.lineTo(480, 260);
+  ctx.moveTo(250, 0);
+  ctx.lineTo(240, 20);
+  ctx.lineTo(260, 20);
   ctx.fill();
 }
 
-function updateNameList() {
-  nameList.innerHTML = "";
-  for (let i = 0; i < names.length; i++) {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <img src="${names[i].photo}" class="avatar" />
-      <span>${names[i].name}</span>
-      <button class="removeBtn" data-index="${i}">Verwijder</button>
-    `;
-    nameList.appendChild(li);
-  }
-  drawWheel((angle * Math.PI) / 180);
-
-  document.querySelectorAll(".removeBtn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      const idx = +(btn as HTMLButtonElement).dataset.index!;
-      names.splice(idx, 1);
-      updateNameList();
-    });
-  });
-}
-
 function spinWheel() {
-  if (isSpinning || names.length === 0) return;
+  if (isSpinning || entries.length === 0) return;
 
   isSpinning = true;
   result.textContent = "";
+  winnerImage.style.display = "none";
 
-  const total = names.length;
   const spinAngle = Math.random() * 360 + 360 * 5;
   const duration = 4000;
   const start = performance.now();
@@ -91,56 +85,50 @@ function spinWheel() {
       requestAnimationFrame(animate);
     } else {
       isSpinning = false;
-      const finalAngle = angle % 360;
-      // Pointer staat op 3 uur (rechts), dus 0 graden is rechts.
-      // Het wiel draait met 'angle', maar de sector die bij 0 graden ligt is de winnaar.
-      // Dus: bereken welke sector op 0 graden ligt.
-      const sectorAngle = 360 / names.length;
-      // Draai het wiel terug zodat 0 graden overeenkomt met de pointer
-      let pointerAngle = (360 - (finalAngle % 360)) % 360;
-      const index = Math.floor(pointerAngle / sectorAngle) % names.length;
-      showWinnerPopup(names[index], index);
+      detectWinner();
     }
   }
 
   requestAnimationFrame(animate);
 }
 
-function showWinnerPopup(person: Person, index: number) {
-  const popup = document.createElement("div");
-  popup.className = "winner-popup";
-  popup.innerHTML = `
-    <img src="${person.photo}" class="winner-photo" />
-    <div class="winner-name">🎉 Winnaar: ${person.name}!</div>
-    <button id="removeWinner">Verwijder naam</button>
-    <button id="closePopup">Sluiten</button>
-  `;
-  document.body.appendChild(popup);
+function detectWinner() {
+  const pointerX = 250;
+  const pointerY = 0;
+  const pixel = ctx.getImageData(pointerX, pointerY, 1, 1).data;
+  const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
 
-  document.getElementById("removeWinner")!.onclick = () => {
-    names.splice(index, 1);
-    updateNameList();
-    popup.remove();
-  };
-  document.getElementById("closePopup")!.onclick = () => popup.remove();
+  const winner = entries.find(e => e.color.toUpperCase() === rgb);
+  if (winner) {
+    result.textContent = `🎉 Winnaar: ${winner.name}`;
+  } else {
+    result.textContent = "Geen winnaar gedetecteerd.";
+  }
 }
 
-addNameBtn.addEventListener("click", () => {
-  const name = nameInput.value.trim();
-  const fileInput = document.getElementById("photoInput") as HTMLInputElement;
-  const file = fileInput.files?.[0];
+function toHex(n: number): string {
+  return n.toString(16).padStart(2, '0');
+}
 
-  if (name && file && !names.some(n => n.name === name)) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      names.push({ name, photo: e.target!.result as string });
-      nameInput.value = "";
-      fileInput.value = "";
-      updateNameList();
+addBtn.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  const file = imageInput.files?.[0];
+  if (!name || !file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const imageUrl = reader.result as string;
+    const newEntry: Entry = {
+      name,
+      color: getRandomColor(),
+      imageUrl
     };
-    reader.readAsDataURL(file);
-  }
+    entries.push(newEntry);
+    nameInput.value = "";
+    imageInput.value = "";
+    drawWheel((angle * Math.PI) / 180);
+  };
+  reader.readAsDataURL(file);
 });
 
 spinBtn.addEventListener("click", spinWheel);
-updateNameList();
