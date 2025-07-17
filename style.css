@@ -1,192 +1,67 @@
-* {
-  box-sizing: border-box;
-}
-
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-  margin: 0;
-  padding: 1rem;
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
-}
-
-.container {
-  max-width: 450px;
-  width: 100%;
-  text-align: center;
-  background: white;
-  padding: 1rem 1.5rem 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgb(0 120 212 / 0.10);
-  margin: 1rem 0;
-}
-
-h1 {
-  margin-bottom: 1rem;
-  color: #0078d4;
-  font-size: 2rem;
-  letter-spacing: 1px;
-}
-
-form {
-  margin-bottom: 1.2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  align-items: stretch;
-}
-
-label {
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 0.2rem;
-  text-align: left;
-}
-
-textarea,
-input[type="text"] {
-  width: 100%;
-  font-size: 1rem;
-  padding: 0.7rem;
-  border: 2px solid #b3d1f3;
-  border-radius: 6px;
-  margin-bottom: 0.2rem;
-  transition: border-color 0.3s;
-  background: #f7fbff;
-}
-
-textarea:focus,
-input[type="text"]:focus {
-  border-color: #0078d4;
-  outline: none;
-  background: #eaf6ff;
-}
-
-input[type="file"] {
-  padding: 0.3rem 0;
-  border: none;
-  background: none;
-}
-
-button {
-  font-size: 1rem;
-  background: linear-gradient(90deg, #0078d4 60%, #005a9e 100%);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 0.7rem 1.2rem;
-  cursor: pointer;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgb(0 120 212 / 0.08);
-  transition: background 0.2s, box-shadow 0.2s;
-}
-
-button:disabled {
-  background: #b3d1f3;
-  cursor: not-allowed;
-  color: #fff;
-}
-
-button:not(:disabled):hover {
-  background: linear-gradient(90deg, #005a9e 60%, #0078d4 100%);
-  box-shadow: 0 4px 16px rgb(0 120 212 / 0.12);
-}
-
-canvas#wheel {
-  margin: 1rem auto;
-  display: block;
-  border-radius: 50%;
-  box-shadow: 0 2px 12px rgb(0 120 212 / 0.15);
-  max-width: 100%;
-  height: auto;
-}
-
-ul#namesList {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0 0.5rem 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-}
-
-ul#namesList li {
-  background: #eaf6ff;
-  color: #0078d4;
-  padding: 0.4rem 0.9rem;
-  border-radius: 16px;
-  font-weight: 500;
-  font-size: 1rem;
-  box-shadow: 0 1px 4px rgb(0 120 212 / 0.07);
-}
-
-#photosList {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  flex-wrap: wrap;
-}
-
-#photosList img {
-  width: 56px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 2px solid #0078d4;
-  box-shadow: 0 2px 8px rgb(0 120 212 / 0.10);
-}
-
-#winnerPopup.hidden {
-  display: none;
-}
-
-#winnerPopup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 120, 212, 0.18);
+  font-family: Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10;
+  height: 100vh;
+  margin: 0;
+  background: #f2f2f2;
 }
 
-.popup-content {
-  background: white;
-  padding: 1.5rem 2rem;
-  border-radius: 12px;
+.wheel-container {
   text-align: center;
-  box-shadow: 0 4px 24px rgb(0 120 212 / 0.18);
 }
 
-.winner-name {
-  font-size: 2rem;
+canvas {
+  border: 8px solid #444;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.input-section {
+  margin-top: 20px;
+}
+
+input[type="text"] {
+  padding: 10px;
+  font-size: 16px;
+  width: 200px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #218838;
+}
+
+#nameList {
+  list-style: none;
+  padding: 0;
+  margin: 10px auto;
+  max-width: 300px;
+}
+
+#nameList li {
+  background-color: #fff;
+  padding: 5px 10px;
+  margin: 4px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+#result {
+  margin-top: 20px;
+  font-size: 24px;
   font-weight: bold;
-  margin: 1rem 0;
-  color: #0078d4;
-}
-
-@media (max-width: 600px) {
-  .container {
-    max-width: 98vw;
-    padding: 0.7rem 0.5rem 1.2rem;
-    border-radius: 8px;
-  }
-  h1 {
-    font-size: 1.3rem;
-  }
-  .popup-content {
-    padding: 1rem 0.5rem;
-    border-radius: 8px;
-  }
-  #photosList img {
-    width: 40px;
-    height: 40px;
-  }
 }

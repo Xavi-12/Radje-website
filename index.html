@@ -2,42 +2,26 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spin the Wheel</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wheel of Names</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Spin the Wheel</h1>
+  <div class="wheel-container">
+    <canvas id="wheel" width="500" height="500"></canvas>
 
-    <form id="namesForm">
-      <label for="namesInput">Voer namen in (één per regel):</label><br />
-      <textarea id="namesInput" rows="6" placeholder="Naam 1&#10;Naam 2&#10;Naam 3"></textarea><br />
-      <button type="submit">Laad Namen</button>
-    </form>
-
-    <form id="addPersonForm">
-      <input id="singleNameInput" type="text" placeholder="Naam toevoegen" />
-      <input id="photoInput" type="file" accept="image/*" />
+    <div class="input-section">
+      <input id="nameInput" type="text" placeholder="Voeg naam toe..." />
       <button id="addNameBtn">Voeg toe</button>
-    </form>
-
-    <canvas id="wheel" width="400" height="400" aria-label="Spin the wheel"></canvas>
-
-    <ul id="namesList"></ul>
-    <div id="photosList" style="display: flex; justify-content: center; margin-top: 1rem;"></div>
-
-    <button id="spinBtn" disabled>Spin het wiel!</button>
-
-    <div id="winnerPopup" class="hidden">
-      <div class="popup-content">
-        <p>De winnaar is:</p>
-        <p id="winnerName" class="winner-name"></p>
-        <button id="closePopupBtn">Sluiten</button>
-      </div>
     </div>
+
+    <ul id="nameList"></ul>
+
+    <button id="spinBtn">Draai het wiel!</button>
+    <div id="result"></div>
   </div>
 
-  <script src="main.js" defer></script>
+  <script type="module" src="main.js"></script>
 </body>
 </html>
+
