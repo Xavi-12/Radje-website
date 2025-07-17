@@ -4,8 +4,8 @@ window.addEventListener('DOMContentLoaded', function () {
     var ctx = wheel.getContext('2d');
     var spinBtn = document.getElementById('spin-btn');
     // Helper: random bright color
-    function brightColor() {
-        var hue = Math.floor(Math.random() * 360);
+    function brightColor(hue) {
+        hue = hue !== null && hue !== void 0 ? hue : Math.floor(Math.random() * 360);
         return "hsl(".concat(hue, ", 90%, 55%)");
     }
     // Draw wheel (rotation in radians)
@@ -19,21 +19,31 @@ window.addEventListener('DOMContentLoaded', function () {
         var startAngle = rotation;
         for (var i = 0; i < n; i++) {
             var sliceAngle = (2 * Math.PI) / n;
+            ctx.save();
             ctx.beginPath();
             ctx.moveTo(centerX, centerY);
             ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
             ctx.closePath();
-            ctx.fillStyle = participants[i].color;
+            // Gradient slice
+            var hue = Math.floor((360 / n) * i);
+            var grad = ctx.createRadialGradient(centerX, centerY, radius * 0.3, centerX, centerY, radius);
+            grad.addColorStop(0, brightColor(hue));
+            grad.addColorStop(1, brightColor((hue + 20) % 360));
+            ctx.fillStyle = grad;
             ctx.fill();
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 4;
             ctx.stroke();
             // Draw name
-            ctx.save();
             ctx.translate(centerX, centerY);
             ctx.rotate(startAngle + sliceAngle / 2);
             ctx.textAlign = "right";
-            ctx.font = "18px Arial";
+            ctx.font = "bold 20px Montserrat, Arial, sans-serif";
             ctx.fillStyle = "#fff";
-            ctx.fillText(participants[i].name, radius - 20, 0);
+            ctx.shadowColor = "#ffa751";
+            ctx.shadowBlur = 8;
+            ctx.fillText(participants[i].name, radius - 30, 0);
+            ctx.shadowBlur = 0;
             ctx.restore();
             startAngle += sliceAngle;
         }
@@ -41,13 +51,20 @@ window.addEventListener('DOMContentLoaded', function () {
     // Draw pin above the wheel (fixed position)
     function drawPin() {
         ctx.save();
-        ctx.beginPath();
         ctx.translate(wheel.width / 2, 20);
-        ctx.moveTo(0, 0);
-        ctx.lineTo(-15, -30);
-        ctx.lineTo(15, -30);
-        ctx.closePath();
+        ctx.beginPath();
+        ctx.arc(0, -20, 16, 0, 2 * Math.PI);
         ctx.fillStyle = "#e74c3c";
+        ctx.shadowColor = "#ff9800";
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-12, -30);
+        ctx.lineTo(12, -30);
+        ctx.closePath();
+        ctx.fillStyle = "#ff9800";
         ctx.fill();
         ctx.restore();
     }

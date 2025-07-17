@@ -11,8 +11,8 @@ const ctx = wheel.getContext('2d')!;
 const spinBtn = document.getElementById('spin-btn') as HTMLButtonElement;
 
 // Helper: random bright color
-function brightColor() {
-    const hue = Math.floor(Math.random() * 360);
+function brightColor(hue?: number) {
+    hue = hue ?? Math.floor(Math.random() * 360);
     return `hsl(${hue}, 90%, 55%)`;
 }
 
@@ -26,21 +26,33 @@ function drawWheel(rotation = 0) {
     let startAngle = rotation;
     for (let i = 0; i < n; i++) {
         const sliceAngle = (2 * Math.PI) / n;
+        ctx.save();
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
         ctx.closePath();
-        ctx.fillStyle = participants[i].color;
+
+        // Gradient slice
+        const hue = Math.floor((360 / n) * i);
+        const grad = ctx.createRadialGradient(centerX, centerY, radius * 0.3, centerX, centerY, radius);
+        grad.addColorStop(0, brightColor(hue));
+        grad.addColorStop(1, brightColor((hue + 20) % 360));
+        ctx.fillStyle = grad;
         ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 4;
         ctx.stroke();
+
         // Draw name
-        ctx.save();
         ctx.translate(centerX, centerY);
         ctx.rotate(startAngle + sliceAngle / 2);
         ctx.textAlign = "right";
-        ctx.font = "18px Arial";
+        ctx.font = "bold 20px Montserrat, Arial, sans-serif";
         ctx.fillStyle = "#fff";
-        ctx.fillText(participants[i].name, radius - 20, 0);
+        ctx.shadowColor = "#ffa751";
+        ctx.shadowBlur = 8;
+        ctx.fillText(participants[i].name, radius - 30, 0);
+        ctx.shadowBlur = 0;
         ctx.restore();
         startAngle += sliceAngle;
     }
@@ -49,13 +61,20 @@ function drawWheel(rotation = 0) {
 // Draw pin above the wheel (fixed position)
 function drawPin() {
     ctx.save();
-    ctx.beginPath();
     ctx.translate(wheel.width / 2, 20);
-    ctx.moveTo(0, 0);
-    ctx.lineTo(-15, -30);
-    ctx.lineTo(15, -30);
-    ctx.closePath();
+    ctx.beginPath();
+    ctx.arc(0, -20, 16, 0, 2 * Math.PI);
     ctx.fillStyle = "#e74c3c";
+    ctx.shadowColor = "#ff9800";
+    ctx.shadowBlur = 12;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-12, -30);
+    ctx.lineTo(12, -30);
+    ctx.closePath();
+    ctx.fillStyle = "#ff9800";
     ctx.fill();
     ctx.restore();
 }
