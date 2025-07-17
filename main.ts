@@ -11,7 +11,6 @@ const imageInput = document.getElementById("imageInput") as HTMLInputElement;
 const addBtn = document.getElementById("addBtn") as HTMLButtonElement;
 const spinBtn = document.getElementById("spinBtn") as HTMLButtonElement;
 const entriesList = document.getElementById("entriesList") as HTMLDivElement;
-
 const winnerPopup = document.getElementById("winnerPopup") as HTMLDivElement;
 const winnerNameEl = document.getElementById("winnerName") as HTMLHeadingElement;
 const winnerPhoto = document.getElementById("winnerPhoto") as HTMLImageElement;
@@ -35,6 +34,8 @@ function getRandomColor(): string {
 function drawWheel(currentAngle: number) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const total = entries.length;
+  if (total === 0) return;
+
   const arc = (2 * Math.PI) / total;
 
   for (let i = 0; i < total; i++) {
@@ -53,24 +54,42 @@ function drawWheel(currentAngle: number) {
     ctx.rotate(startAngle + arc / 2);
     ctx.textAlign = "right";
     ctx.fillStyle = "#000";
-    ctx.font = "18px Arial";
+    ctx.font = "bold 16px Arial";
     ctx.fillText(entry.name, 230, 10);
     ctx.restore();
   }
 
+  // Pointer
   ctx.fillStyle = "#000";
   ctx.beginPath();
   ctx.moveTo(250, 0);
-  ctx.lineTo(240, 20);
-  ctx.lineTo(260, 20);
+  ctx.lineTo(240, 30);
+  ctx.lineTo(260, 30);
+  ctx.closePath();
   ctx.fill();
+}
+
+function toHex(n: number): string {
+  return n.toString(16).padStart(2, "0");
+}
+
+function detectWinner() {
+  const pixel = ctx.getImageData(250, 25, 1, 1).data;
+  const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
+  const winnerIndex = entries.findIndex(e => e.color.toUpperCase() === rgb);
+
+  if (winnerIndex >= 0) {
+    lastWinnerIndex = winnerIndex;
+    showWinnerPopup(entries[winnerIndex]);
+  } else {
+    alert("Geen winnaar gevonden.");
+  }
 }
 
 function spinWheel() {
   if (isSpinning || entries.length === 0) return;
 
   isSpinning = true;
-  lastWinnerIndex = null;
   const spinAngle = Math.random() * 360 + 360 * 5;
   const duration = 4000;
   const start = performance.now();
@@ -94,48 +113,27 @@ function spinWheel() {
   requestAnimationFrame(animate);
 }
 
-function detectWinner() {
-  const pointerX = 250;
-  const pointerY = 20;
-  const pixel = ctx.getImageData(pointerX, pointerY, 1, 1).data;
-  const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
-
-  const winnerIndex = entries.findIndex(e => e.color.toUpperCase() === rgb);
-  if (winnerIndex >= 0) {
-    const winner = entries[winnerIndex];
-    lastWinnerIndex = winnerIndex;
-    showWinnerPopup(winner);
-  } else {
-    alert("Geen winnaar gedetecteerd.");
-  }
-}
-
 function showWinnerPopup(winner: Entry) {
   winnerNameEl.textContent = `🎉 ${winner.name}`;
   winnerPhoto.src = winner.imageUrl;
   winnerPopup.classList.remove("hidden");
 }
 
-removeWinnerBtn.addEventListener("click", () => {
+removeWinnerBtn.onclick = () => {
   if (lastWinnerIndex !== null) {
     entries.splice(lastWinnerIndex, 1);
     drawWheel((angle * Math.PI) / 180);
     updateEntriesList();
   }
   winnerPopup.classList.add("hidden");
-});
+};
 
-keepWinnerBtn.addEventListener("click", () => {
+keepWinnerBtn.onclick = () => {
   winnerPopup.classList.add("hidden");
-});
-
-function toHex(n: number): string {
-  return n.toString(16).padStart(2, '0');
-}
+};
 
 function updateEntriesList() {
   entriesList.innerHTML = "";
-
   entries.forEach((entry, index) => {
     const card = document.createElement("div");
     card.className = "entry-card";
@@ -147,9 +145,9 @@ function updateEntriesList() {
     const name = document.createElement("div");
     name.textContent = entry.name;
 
-    const removeBtn = document.createElement("button");
-    removeBtn.textContent = "Verwijder";
-    removeBtn.onclick = () => {
+    const btn = document.createElement("button");
+    btn.textContent = "Verwijder";
+    btn.onclick = () => {
       entries.splice(index, 1);
       drawWheel((angle * Math.PI) / 180);
       updateEntriesList();
@@ -157,12 +155,12 @@ function updateEntriesList() {
 
     card.appendChild(img);
     card.appendChild(name);
-    card.appendChild(removeBtn);
+    card.appendChild(btn);
     entriesList.appendChild(card);
   });
 }
 
-addBtn.addEventListener("click", () => {
+addBtn.onclick = () => {
   const name = nameInput.value.trim();
   const file = imageInput.files?.[0];
   if (!name || !file) return;
@@ -170,18 +168,13 @@ addBtn.addEventListener("click", () => {
   const reader = new FileReader();
   reader.onload = () => {
     const imageUrl = reader.result as string;
-    const newEntry: Entry = {
-      name,
-      color: getRandomColor(),
-      imageUrl
-    };
-    entries.push(newEntry);
+    entries.push({ name, imageUrl, color: getRandomColor() });
     nameInput.value = "";
     imageInput.value = "";
     drawWheel((angle * Math.PI) / 180);
     updateEntriesList();
   };
   reader.readAsDataURL(file);
-});
+};
 
-spinBtn.addEventListener("click", spinWheel);
+spinBtn.onclick = spinWheel;

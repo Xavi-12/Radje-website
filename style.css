@@ -7,14 +7,14 @@
 body {
   font-family: Arial, sans-serif;
   background-color: #f0f0f0;
-  padding: 20px;
   display: flex;
   justify-content: center;
+  padding: 20px;
 }
 
 .wheel-container {
-  max-width: 600px;
   width: 100%;
+  max-width: 600px;
   text-align: center;
 }
 
@@ -22,15 +22,15 @@ canvas {
   width: 100%;
   height: auto;
   max-width: 500px;
-  margin: 0 auto 20px;
   display: block;
+  margin: 0 auto 20px;
 }
 
 .input-section {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 10px;
+  justify-content: center;
   margin-bottom: 10px;
 }
 
@@ -39,17 +39,18 @@ canvas {
 .input-section button {
   padding: 10px;
   font-size: 16px;
+  flex: 1 1 100px;
 }
 
 #spinBtn {
   padding: 12px 20px;
   font-size: 18px;
-  margin: 15px 0;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  margin-top: 10px;
 }
 
 #spinBtn:hover {
@@ -60,17 +61,17 @@ canvas {
   margin-top: 20px;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
   justify-content: center;
+  gap: 10px;
 }
 
 .entry-card {
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  padding: 10px;
-  border-radius: 8px;
-  text-align: center;
   width: 100px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
 }
 
 .entry-card img {
@@ -88,22 +89,22 @@ canvas {
   border: none;
   padding: 5px;
   font-size: 14px;
-  cursor: pointer;
   border-radius: 5px;
+  cursor: pointer;
 }
 
 .entry-card button:hover {
   background-color: #c82333;
 }
 
-/* Popup styles */
+/* Popup */
 .popup {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -118,10 +119,10 @@ canvas {
   background: white;
   padding: 20px;
   border-radius: 15px;
+  max-width: 90%;
+  max-height: 90%;
+  width: 100%;
   text-align: center;
-  width: 90%;
-  max-width: 400px;
-  max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
 }
@@ -174,27 +175,22 @@ canvas {
   background-color: #218838;
 }
 
-/* Media query for smaller screens */
-@media screen and (max-width: 480px) {
-  .popup-content h2 {
-    font-size: 18px;
+/* Mobile tweaks */
+@media (max-width: 480px) {
+  .input-section {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .popup-buttons button {
-    font-size: 15px;
+  .popup-content h2 {
+    font-size: 18px;
   }
 
   .entry-card {
     width: 80px;
   }
 
-  .input-section {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .input-section input,
-  .input-section button {
-    width: 100%;
+  .popup-content img {
+    max-height: 200px;
   }
 }
