@@ -74,7 +74,7 @@ function spinWheel() {
     requestAnimationFrame(animate);
 }
 function detectWinner() {
-    var pointerX = 250;
+    var pointerX = 255;
     var pointerY = 0;
     var pixel = ctx.getImageData(pointerX, pointerY, 1, 1).data;
     var rgb = "#".concat(toHex(pixel[0])).concat(toHex(pixel[1])).concat(toHex(pixel[2])).toUpperCase();
