@@ -16,7 +16,16 @@
       <button type="submit">Laad Namen</button>
     </form>
 
+    <form id="addPersonForm">
+      <input id="singleNameInput" type="text" placeholder="Naam toevoegen" />
+      <input id="photoInput" type="file" accept="image/*" />
+      <button id="addNameBtn">Voeg toe</button>
+    </form>
+
     <canvas id="wheel" width="400" height="400" aria-label="Spin the wheel"></canvas>
+
+    <ul id="namesList"></ul>
+    <div id="photosList" style="display: flex; justify-content: center; margin-top: 1rem;"></div>
 
     <button id="spinBtn" disabled>Spin het wiel!</button>
 
@@ -29,6 +38,6 @@
     </div>
   </div>
 
-  <script src="app.js" defer></script>
+  <script src="main.js" defer></script>
 </body>
 </html>

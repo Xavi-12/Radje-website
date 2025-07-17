@@ -6,6 +6,11 @@ const namesInput = document.getElementById('namesInput') as HTMLTextAreaElement;
 const winnerPopup = document.getElementById('winnerPopup') as HTMLDivElement;
 const winnerNameElem = document.getElementById('winnerName') as HTMLParagraphElement;
 const closePopupBtn = document.getElementById('closePopupBtn') as HTMLButtonElement;
+const nameInput = document.getElementById('singleNameInput') as HTMLInputElement;
+const photoInput = document.getElementById('photoInput') as HTMLInputElement;
+const addNameBtn = document.getElementById('addNameBtn') as HTMLButtonElement;
+const namesListElem = document.getElementById('namesList') as HTMLUListElement;
+const photosListElem = document.getElementById('photosList') as HTMLDivElement;
 
 let names: string[] = [];
 let startAngle = 0;
@@ -14,6 +19,39 @@ let spinning = false;
 let finalAngle = 0;
 
 const FULL_ROTATION = 2 * Math.PI;
+
+type Person = {
+  name: string;
+  photoUrl?: string;
+};
+
+let persons: Person[] = [];
+
+function updateNamesList() {
+  namesListElem.innerHTML = '';
+  persons.forEach((person, idx) => {
+    const li = document.createElement('li');
+    li.textContent = person.name;
+    namesListElem.appendChild(li);
+  });
+}
+
+function updatePhotosList() {
+  photosListElem.innerHTML = '';
+  persons.forEach((person) => {
+    if (person.photoUrl) {
+      const img = document.createElement('img');
+      img.src = person.photoUrl;
+      img.alt = person.name;
+      img.style.width = '64px';
+      img.style.height = '64px';
+      img.style.objectFit = 'cover';
+      img.style.borderRadius = '50%';
+      img.style.margin = '0 8px';
+      photosListElem.appendChild(img);
+    }
+  });
+}
 
 function drawWheel(): void {
   const width = canvas.width;
@@ -26,11 +64,13 @@ function drawWheel(): void {
 
   ctx.clearRect(0, 0, width, height);
 
-  arc = FULL_ROTATION / names.length;
+  if (persons.length === 0) return;
 
-  for (let i = 0; i < names.length; i++) {
+  arc = FULL_ROTATION / persons.length;
+
+  for (let i = 0; i < persons.length; i++) {
     const angle = startAngle + i * arc;
-    ctx.fillStyle = `hsl(${(i * 360) / names.length}, 70%, 70%)`;
+    ctx.fillStyle = `hsl(${(i * 360) / persons.length}, 70%, 70%)`;
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 2;
 
@@ -50,7 +90,7 @@ function drawWheel(): void {
     ctx.rotate(angle + arc / 2 + Math.PI / 2);
     ctx.textAlign = 'center';
     ctx.font = 'bold 16px Arial';
-    const text = names[i].length > 12 ? names[i].slice(0, 12) + '…' : names[i];
+    const text = persons[i].name.length > 12 ? persons[i].name.slice(0, 12) + '…' : persons[i].name;
     ctx.fillText(text, 0, 0);
     ctx.restore();
   }
@@ -102,7 +142,7 @@ function spin(): void {
 
 function determineWinner(): void {
   const winnerIndex = Math.floor((finalAngle % FULL_ROTATION) / arc);
-  winnerNameElem.textContent = names[winnerIndex];
+  winnerNameElem.textContent = persons[winnerIndex].name;
   winnerPopup.classList.remove('hidden');
 }
 
@@ -130,6 +170,27 @@ spinBtn.addEventListener('click', spin);
 
 closePopupBtn.addEventListener('click', () => {
   winnerPopup.classList.add('hidden');
+});
+
+addNameBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  const name = nameInput.value.trim();
+  if (!name) {
+    alert('Voer een naam in.');
+    return;
+  }
+  let photoUrl: string | undefined;
+  if (photoInput.files && photoInput.files[0]) {
+    const file = photoInput.files[0];
+    photoUrl = URL.createObjectURL(file);
+  }
+  persons.push({ name, photoUrl });
+  nameInput.value = '';
+  photoInput.value = '';
+  updateNamesList();
+  updatePhotosList();
+  drawWheel();
+  spinBtn.disabled = persons.length < 2;
 });
 
 window.onload = () => {

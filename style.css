@@ -4,11 +4,12 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f0f4f8;
+  background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
   margin: 0;
   padding: 1rem;
   display: flex;
   justify-content: center;
+  min-height: 100vh;
 }
 
 .container {
@@ -17,59 +18,126 @@ body {
   text-align: center;
   background: white;
   padding: 1rem 1.5rem 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgb(0 120 212 / 0.10);
+  margin: 1rem 0;
 }
 
 h1 {
   margin-bottom: 1rem;
-  color: #333;
+  color: #0078d4;
+  font-size: 2rem;
+  letter-spacing: 1px;
 }
 
-textarea {
+form {
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  align-items: stretch;
+}
+
+label {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.2rem;
+  text-align: left;
+}
+
+textarea,
+input[type="text"] {
   width: 100%;
   font-size: 1rem;
-  padding: 0.5rem;
-  resize: vertical;
-  border: 2px solid #ccc;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  transition: border-color 0.3s ease;
+  padding: 0.7rem;
+  border: 2px solid #b3d1f3;
+  border-radius: 6px;
+  margin-bottom: 0.2rem;
+  transition: border-color 0.3s;
+  background: #f7fbff;
 }
 
-textarea:focus {
+textarea:focus,
+input[type="text"]:focus {
   border-color: #0078d4;
   outline: none;
+  background: #eaf6ff;
+}
+
+input[type="file"] {
+  padding: 0.3rem 0;
+  border: none;
+  background: none;
 }
 
 button {
   font-size: 1rem;
-  background-color: #0078d4;
+  background: linear-gradient(90deg, #0078d4 60%, #005a9e 100%);
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  padding: 0.7rem 1.2rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgb(0 120 212 / 0.08);
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 button:disabled {
-  background-color: #999;
+  background: #b3d1f3;
   cursor: not-allowed;
+  color: #fff;
 }
 
 button:not(:disabled):hover {
-  background-color: #005a9e;
-  transition: background-color 0.2s ease;
+  background: linear-gradient(90deg, #005a9e 60%, #0078d4 100%);
+  box-shadow: 0 4px 16px rgb(0 120 212 / 0.12);
 }
 
 canvas#wheel {
   margin: 1rem auto;
   display: block;
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+  box-shadow: 0 2px 12px rgb(0 120 212 / 0.15);
   max-width: 100%;
   height: auto;
+}
+
+ul#namesList {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0.5rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+ul#namesList li {
+  background: #eaf6ff;
+  color: #0078d4;
+  padding: 0.4rem 0.9rem;
+  border-radius: 16px;
+  font-weight: 500;
+  font-size: 1rem;
+  box-shadow: 0 1px 4px rgb(0 120 212 / 0.07);
+}
+
+#photosList {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+#photosList img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #0078d4;
+  box-shadow: 0 2px 8px rgb(0 120 212 / 0.10);
 }
 
 #winnerPopup.hidden {
@@ -82,18 +150,19 @@ canvas#wheel {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 120, 212, 0.18);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 10;
 }
 
 .popup-content {
   background: white;
   padding: 1.5rem 2rem;
-  border-radius: 8px;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+  box-shadow: 0 4px 24px rgb(0 120 212 / 0.18);
 }
 
 .winner-name {
@@ -101,4 +170,23 @@ canvas#wheel {
   font-weight: bold;
   margin: 1rem 0;
   color: #0078d4;
+}
+
+@media (max-width: 600px) {
+  .container {
+    max-width: 98vw;
+    padding: 0.7rem 0.5rem 1.2rem;
+    border-radius: 8px;
+  }
+  h1 {
+    font-size: 1.3rem;
+  }
+  .popup-content {
+    padding: 1rem 0.5rem;
+    border-radius: 8px;
+  }
+  #photosList img {
+    width: 40px;
+    height: 40px;
+  }
 }

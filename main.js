@@ -6,12 +6,42 @@ var namesInput = document.getElementById('namesInput');
 var winnerPopup = document.getElementById('winnerPopup');
 var winnerNameElem = document.getElementById('winnerName');
 var closePopupBtn = document.getElementById('closePopupBtn');
+var nameInput = document.getElementById('singleNameInput');
+var photoInput = document.getElementById('photoInput');
+var addNameBtn = document.getElementById('addNameBtn');
+var namesListElem = document.getElementById('namesList');
+var photosListElem = document.getElementById('photosList');
 var names = [];
 var startAngle = 0;
 var arc = 0;
 var spinning = false;
 var finalAngle = 0;
 var FULL_ROTATION = 2 * Math.PI;
+var persons = [];
+function updateNamesList() {
+    namesListElem.innerHTML = '';
+    persons.forEach(function (person, idx) {
+        var li = document.createElement('li');
+        li.textContent = person.name;
+        namesListElem.appendChild(li);
+    });
+}
+function updatePhotosList() {
+    photosListElem.innerHTML = '';
+    persons.forEach(function (person) {
+        if (person.photoUrl) {
+            var img = document.createElement('img');
+            img.src = person.photoUrl;
+            img.alt = person.name;
+            img.style.width = '64px';
+            img.style.height = '64px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '50%';
+            img.style.margin = '0 8px';
+            photosListElem.appendChild(img);
+        }
+    });
+}
 function drawWheel() {
     var width = canvas.width;
     var height = canvas.height;
@@ -21,10 +51,12 @@ function drawWheel() {
     var textRadius = outsideRadius - 40;
     var insideRadius = 50;
     ctx.clearRect(0, 0, width, height);
-    arc = FULL_ROTATION / names.length;
-    for (var i = 0; i < names.length; i++) {
+    if (persons.length === 0)
+        return;
+    arc = FULL_ROTATION / persons.length;
+    for (var i = 0; i < persons.length; i++) {
         var angle = startAngle + i * arc;
-        ctx.fillStyle = "hsl(".concat((i * 360) / names.length, ", 70%, 70%)");
+        ctx.fillStyle = "hsl(".concat((i * 360) / persons.length, ", 70%, 70%)");
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -39,7 +71,7 @@ function drawWheel() {
         ctx.rotate(angle + arc / 2 + Math.PI / 2);
         ctx.textAlign = 'center';
         ctx.font = 'bold 16px Arial';
-        var text = names[i].length > 12 ? names[i].slice(0, 12) + '…' : names[i];
+        var text = persons[i].name.length > 12 ? persons[i].name.slice(0, 12) + '…' : persons[i].name;
         ctx.fillText(text, 0, 0);
         ctx.restore();
     }
@@ -84,7 +116,7 @@ function spin() {
 }
 function determineWinner() {
     var winnerIndex = Math.floor((finalAngle % FULL_ROTATION) / arc);
-    winnerNameElem.textContent = names[winnerIndex];
+    winnerNameElem.textContent = persons[winnerIndex].name;
     winnerPopup.classList.remove('hidden');
 }
 namesForm.addEventListener('submit', function (e) {
@@ -106,6 +138,26 @@ namesForm.addEventListener('submit', function (e) {
 spinBtn.addEventListener('click', spin);
 closePopupBtn.addEventListener('click', function () {
     winnerPopup.classList.add('hidden');
+});
+addNameBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    var name = nameInput.value.trim();
+    if (!name) {
+        alert('Voer een naam in.');
+        return;
+    }
+    var photoUrl;
+    if (photoInput.files && photoInput.files[0]) {
+        var file = photoInput.files[0];
+        photoUrl = URL.createObjectURL(file);
+    }
+    persons.push({ name: name, photoUrl: photoUrl });
+    nameInput.value = '';
+    photoInput.value = '';
+    updateNamesList();
+    updatePhotosList();
+    drawWheel();
+    spinBtn.disabled = persons.length < 2;
 });
 window.onload = function () {
     spinBtn.disabled = true;
