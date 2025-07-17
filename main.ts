@@ -22,17 +22,22 @@ const picker = document.querySelector('.picker') as HTMLDivElement;
 // Mooie gouden pick boven het wiel
 function updatePicker() {
     picker.style.left = '50%';
-    picker.style.top = (wheel.offsetTop - 30) + 'px';
+    // Zet de pick net boven het canvas, gecentreerd
+    picker.style.top = (wheel.offsetTop - 38) + 'px';
     picker.style.transform = 'translateX(-50%)';
     picker.style.width = '0';
     picker.style.height = '0';
-    picker.style.borderLeft = '18px solid transparent';
-    picker.style.borderRight = '18px solid transparent';
-    picker.style.borderBottom = '38px solid gold';
-    picker.style.borderRadius = '6px';
-    picker.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+    // Mooie gouden pick met een witte rand en een schaduw
+    picker.style.borderLeft = '22px solid transparent';
+    picker.style.borderRight = '22px solid transparent';
+    picker.style.borderTop = '44px solid gold'; // borderTop ipv borderBottom!
+    picker.style.borderBottom = 'none';
+    picker.style.borderRadius = '10px';
+    picker.style.boxShadow = '0 6px 18px rgba(255,215,0,0.25), 0 2px 8px rgba(0,0,0,0.12)';
     picker.style.position = 'absolute';
     picker.style.zIndex = '2';
+    // Witte rand
+    picker.style.outline = '3px solid white';
 }
 updatePicker();
 window.addEventListener('resize', updatePicker);
