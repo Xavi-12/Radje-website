@@ -22,22 +22,21 @@ const picker = document.querySelector('.picker') as HTMLDivElement;
 // Mooie gouden pick boven het wiel
 function updatePicker() {
     picker.style.left = '50%';
-    // Zet de pick net boven het canvas, gecentreerd
-    picker.style.top = (wheel.offsetTop - 38) + 'px';
+    picker.style.top = (wheel.offsetTop - 32) + 'px';
     picker.style.transform = 'translateX(-50%)';
     picker.style.width = '0';
     picker.style.height = '0';
-    // Mooie gouden pick met een witte rand en een schaduw
-    picker.style.borderLeft = '22px solid transparent';
-    picker.style.borderRight = '22px solid transparent';
-    picker.style.borderTop = '44px solid gold'; // borderTop ipv borderBottom!
-    picker.style.borderBottom = 'none';
-    picker.style.borderRadius = '10px';
-    picker.style.boxShadow = '0 6px 18px rgba(255,215,0,0.25), 0 2px 8px rgba(0,0,0,0.12)';
+    // Realistische pijl met punt naar beneden, rood met witte rand en schaduw
+    picker.style.borderLeft = '18px solid transparent';
+    picker.style.borderRight = '18px solid transparent';
+    picker.style.borderTop = 'none';
+    picker.style.borderBottom = '36px solid #c0392b'; // Dieprood
+    picker.style.borderRadius = '4px';
+    picker.style.boxShadow = '0 8px 16px rgba(0,0,0,0.18)';
     picker.style.position = 'absolute';
     picker.style.zIndex = '2';
-    // Witte rand
     picker.style.outline = '3px solid white';
+    // Maak de pijl iets breder en korter voor een realistisch effect
 }
 updatePicker();
 window.addEventListener('resize', updatePicker);
@@ -81,21 +80,27 @@ function drawWheel(angle = 0) {
     }
 }
 
+function getWinnerIndexByAngle(angle: number) {
+    // De pointer staat op 270 graden (3 * Math.PI / 2)
+    const pointerAngle = (3 * Math.PI / 2 - angle + 2 * Math.PI) % (2 * Math.PI);
+    const sliceAngle = 2 * Math.PI / entries.length;
+    let idx = Math.floor(pointerAngle / sliceAngle);
+    // Correctie als pointer precies op de grens valt
+    if (idx >= entries.length) idx = 0;
+    return idx;
+}
+
 function spinWheel() {
     if (spinning || entries.length < 2) return;
     spinning = true;
     spinBtn.disabled = true;
     winnerDisplay.textContent = "";
 
-    // Krachtigere draai: meer spins en random tijd
-    const spins = Math.floor(Math.random() * 4) + 7; // 7-10 rondjes
-    const finalIndex = Math.floor(Math.random() * entries.length);
-    winnerIndex = finalIndex;
-    const sliceAngle = 2 * Math.PI / entries.length;
-    const finalAngle = (3 * Math.PI / 2) - (finalIndex * sliceAngle) - (sliceAngle / 2);
-
+    // Altijd minimaal 10 tot 16 rondjes, random
+    const spins = Math.floor(Math.random() * 7) + 10; // 10-16 rondjes
+    const randomEndAngle = Math.random() * 2 * Math.PI;
     let start = currentAngle;
-    let end = finalAngle + spins * 2 * Math.PI;
+    let end = randomEndAngle + spins * 2 * Math.PI;
     let duration = Math.floor(Math.random() * 1200) + 3200; // 3200-4400ms
     let startTime: number | null = null;
 
@@ -103,7 +108,6 @@ function spinWheel() {
         if (!startTime) startTime = ts;
         let elapsed = ts - startTime;
         let progress = Math.min(elapsed / duration, 1);
-        // Sterkere ease out
         let ease = 1 - Math.pow(1 - progress, 4);
         currentAngle = start + (end - start) * ease;
         drawWheel(currentAngle);
@@ -113,6 +117,8 @@ function spinWheel() {
         } else {
             spinning = false;
             spinBtn.disabled = false;
+            // Bepaal de winnaar op basis van de eindhoek
+            winnerIndex = getWinnerIndexByAngle(currentAngle);
             showWinner();
         }
     }
