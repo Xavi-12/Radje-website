@@ -8,7 +8,7 @@ window.addEventListener('DOMContentLoaded', function () {
         var hue = Math.floor(Math.random() * 360);
         return "hsl(".concat(hue, ", 90%, 55%)");
     }
-    // Draw wheel
+    // Draw wheel (rotation in radians)
     function drawWheel(rotation) {
         if (rotation === void 0) { rotation = 0; }
         ctx.clearRect(0, 0, wheel.width, wheel.height);
@@ -37,9 +37,10 @@ window.addEventListener('DOMContentLoaded', function () {
             ctx.restore();
             startAngle += sliceAngle;
         }
+        // Draw pin (always at top, not rotated)
         drawPin();
     }
-    // Draw pin above the wheel
+    // Draw pin above the wheel (fixed position)
     function drawPin() {
         ctx.save();
         ctx.translate(wheel.width / 2, 20);
@@ -55,39 +56,52 @@ window.addEventListener('DOMContentLoaded', function () {
     // Spin logic
     var spinning = false;
     var angle = 0;
-    var targetAngle = 0;
+    var angularVelocity = 0;
     var winnerIndex = 0;
     function spinWheel() {
         if (participants.length === 0 || spinning)
             return;
         spinning = true;
-        var n = participants.length;
-        var sliceAngle = (2 * Math.PI) / n;
-        winnerIndex = Math.floor(Math.random() * n);
-        // Target angle so winner is at top (pin points to center of slice)
-        targetAngle = (3 * Math.PI / 2) - (winnerIndex * sliceAngle) - (sliceAngle / 2) + (2 * Math.PI * 5); // 5 rounds
-        animateSpin();
+        // Randomize final angle anywhere on the wheel
+        var extraSpins = Math.floor(Math.random() * 3) + 5; // 5-7 rounds
+        var randomOffset = Math.random() * 2 * Math.PI;
+        var finalAngle = extraSpins * 2 * Math.PI + randomOffset;
+        angularVelocity = 0.35; // initial speed
+        animateSpin(finalAngle);
     }
-    function animateSpin() {
-        if (angle < targetAngle) {
-            angle += (targetAngle - angle) / 15 + 0.02;
+    function animateSpin(finalAngle) {
+        if (angle < finalAngle) {
+            angle += angularVelocity;
+            angularVelocity *= 0.985; // slow down gradually
             ctx.save();
             ctx.clearRect(0, 0, wheel.width, wheel.height);
             ctx.translate(wheel.width / 2, wheel.height / 2);
             ctx.rotate(angle);
             ctx.translate(-wheel.width / 2, -wheel.height / 2);
-            drawWheel();
+            drawWheel(0); // wheel rotates, pin stays fixed
             ctx.restore();
-            requestAnimationFrame(animateSpin);
+            requestAnimationFrame(function () { return animateSpin(finalAngle); });
         }
         else {
             spinning = false;
-            angle = targetAngle % (2 * Math.PI);
+            angle = finalAngle % (2 * Math.PI);
+            drawWheel(angle); // draw final position
             showWinnerPopup();
         }
     }
+    // Determine winner based on where the pin points
+    function getWinnerIndex() {
+        var n = participants.length;
+        var sliceAngle = (2 * Math.PI) / n;
+        // The pin is at 12 o'clock, so calculate which slice is at angle = 3*Math.PI/2
+        var normalized = (3 * Math.PI / 2 - angle) % (2 * Math.PI);
+        if (normalized < 0)
+            normalized += 2 * Math.PI;
+        return Math.floor(normalized / sliceAngle) % n;
+    }
     // Winner popup with remove button
     function showWinnerPopup() {
+        winnerIndex = getWinnerIndex();
         var winner = participants[winnerIndex];
         var popup = document.createElement('div');
         popup.className = 'winner-popup';
@@ -99,7 +113,7 @@ window.addEventListener('DOMContentLoaded', function () {
         var removeBtn = document.getElementById('remove-winner-btn');
         removeBtn === null || removeBtn === void 0 ? void 0 : removeBtn.addEventListener('click', function () {
             participants.splice(winnerIndex, 1);
-            drawWheel();
+            drawWheel(angle);
             clearTimeout(autoClose);
             popup.remove();
         });
@@ -141,9 +155,9 @@ window.addEventListener('DOMContentLoaded', function () {
         photoInput.value = '';
         previewImg.src = '';
         previewImg.style.display = 'none';
-        drawWheel();
+        drawWheel(angle);
     });
     // Init
-    drawWheel();
+    drawWheel(angle);
     spinBtn.addEventListener('click', spinWheel);
 });
