@@ -15,6 +15,31 @@ window.addEventListener('DOMContentLoaded', function () {
     function drawWheel() {
         var radius = canvas.width / 2;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (participants.length === 0) {
+            // Teken een cirkel als radje
+            ctx.beginPath();
+            ctx.arc(radius, radius, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = "#e0e0e0";
+            ctx.fill();
+            ctx.closePath();
+            // Placeholder tekst
+            ctx.save();
+            ctx.font = "bold 20px sans-serif";
+            ctx.fillStyle = "#888";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("Voeg namen toe!", radius, radius);
+            ctx.restore();
+            // Teken picker
+            ctx.beginPath();
+            ctx.moveTo(radius - 10, 0);
+            ctx.lineTo(radius + 10, 0);
+            ctx.lineTo(radius, 20);
+            ctx.fillStyle = "black";
+            ctx.fill();
+            ctx.closePath();
+            return;
+        }
         var sliceAngle = (2 * Math.PI) / participants.length;
         participants.forEach(function (participant, index) {
             var startAngle = index * sliceAngle + rotation;
@@ -84,8 +109,11 @@ window.addEventListener('DOMContentLoaded', function () {
         img.src = winner.image.src;
         img.style.maxWidth = "200px";
         img.style.borderRadius = "10px";
+        img.style.display = "block";
+        img.style.margin = "0 auto 16px auto";
         var removeBtn = document.createElement("button");
         removeBtn.textContent = "Verwijder van het rad";
+        removeBtn.className = "popup-btn";
         removeBtn.onclick = function () {
             participants.splice(index, 1);
             drawWheel();
@@ -95,10 +123,13 @@ window.addEventListener('DOMContentLoaded', function () {
         };
         var keepBtn = document.createElement("button");
         keepBtn.textContent = "Laat op het rad";
+        keepBtn.className = "popup-btn";
         keepBtn.onclick = function () { return container.remove(); };
         container.append(nameEl, img, removeBtn, keepBtn);
+        // Overlay over het rad
         winnerDisplay.innerHTML = "";
         winnerDisplay.appendChild(container);
+        winnerDisplay.style.display = "flex";
     }
     addNameForm.addEventListener("submit", function (e) {
         var _a;

@@ -62,14 +62,40 @@ input[type="file"] {
 }
 
 .winner-popup {
-  background-color: #f0f8ff;
-  padding: 20px;
-  border: 2px solid #007bff;
-  border-radius: 15px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  background: #fff;
+  z-index: 1000;
+  max-width: 90vw;
+  width: 350px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 24px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+}
+
+.popup-btn {
+  margin: 8px 0;
+  padding: 10px 18px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background: #1976d2;
+  color: #fff;
+  cursor: pointer;
+  width: 100%;
+  max-width: 220px;
+}
+
+.popup-btn:last-child {
+  background: #aaa;
 }
 
 ul#namesList {
@@ -103,4 +129,16 @@ ul#namesList li {
 
 .preview-entry img {
   border: 2px solid #007bff;
+}
+
+@media (max-width: 600px) {
+  .winner-popup {
+    width: 95vw;
+    padding: 16px 4vw;
+    font-size: 1.1rem;
+  }
+  .popup-btn {
+    font-size: 1rem;
+    padding: 12px 0;
+  }
 }
