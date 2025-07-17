@@ -10,6 +10,8 @@
   <div class="wheel-container">
     <canvas id="wheel" width="500" height="500"></canvas>
 
+    <div class="pointer"></div>
+
     <div class="input-section">
       <input id="nameInput" type="text" placeholder="Naam invoeren..." />
       <input id="imageInput" type="file" accept="image/*" />
@@ -17,8 +19,19 @@
     </div>
 
     <button id="spinBtn">Draai het wiel!</button>
-    <div id="result"></div>
-    <img id="winnerImage" />
+
+    <div class="name-list" id="nameList"></div>
+  </div>
+
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <h2 id="popupTitle"></h2>
+      <img id="popupImage" />
+      <div class="popup-actions">
+        <button id="keepBtn">Laat staan</button>
+        <button id="removeBtn">Verwijder winnaar</button>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="main.js"></script>

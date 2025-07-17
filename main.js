@@ -4,11 +4,16 @@ var nameInput = document.getElementById("nameInput");
 var imageInput = document.getElementById("imageInput");
 var addBtn = document.getElementById("addBtn");
 var spinBtn = document.getElementById("spinBtn");
-var result = document.getElementById("result");
-var winnerImage = document.getElementById("winnerImage");
+var nameList = document.getElementById("nameList");
+var popup = document.getElementById("popup");
+var popupTitle = document.getElementById("popupTitle");
+var popupImage = document.getElementById("popupImage");
+var removeBtn = document.getElementById("removeBtn");
+var keepBtn = document.getElementById("keepBtn");
 var entries = [];
 var angle = 0;
 var isSpinning = false;
+var currentWinner = null;
 function getRandomColor() {
     var letters = "0123456789ABCDEF";
     var color = "#";
@@ -20,6 +25,8 @@ function getRandomColor() {
 function drawWheel(currentAngle) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     var total = entries.length;
+    if (total === 0)
+        return;
     var arc = (2 * Math.PI) / total;
     for (var i = 0; i < total; i++) {
         var entry = entries[i];
@@ -30,7 +37,6 @@ function drawWheel(currentAngle) {
         ctx.moveTo(250, 250);
         ctx.arc(250, 250, 250, startAngle, endAngle);
         ctx.fill();
-        // Tekst op sector
         ctx.save();
         ctx.translate(250, 250);
         ctx.rotate(startAngle + arc / 2);
@@ -40,19 +46,11 @@ function drawWheel(currentAngle) {
         ctx.fillText(entry.name, 230, 10);
         ctx.restore();
     }
-    ctx.fillStyle = "#000";
-    ctx.beginPath();
-    ctx.moveTo(250, 0);
-    ctx.lineTo(240, 20);
-    ctx.lineTo(260, 20);
-    ctx.fill();
 }
 function spinWheel() {
     if (isSpinning || entries.length === 0)
         return;
     isSpinning = true;
-    result.textContent = "";
-    winnerImage.style.display = "none";
     var spinAngle = Math.random() * 360 + 360 * 5;
     var duration = 4000;
     var start = performance.now();
@@ -74,20 +72,31 @@ function spinWheel() {
     requestAnimationFrame(animate);
 }
 function detectWinner() {
-    var pointerX = 250;
-    var pointerY = 20;
-    var pixel = ctx.getImageData(pointerX, pointerY, 1, 1).data;
-    var rgb = "#".concat(toHex(pixel[0])).concat(toHex(pixel[1])).concat(toHex(pixel[2])).toUpperCase();
-    var winner = entries.find(function (e) { return e.color.toUpperCase() === rgb; });
-    if (winner) {
-        result.textContent = "\uD83C\uDF89 Winnaar: ".concat(winner.name);
-    }
-    else {
-        result.textContent = "Geen winnaar gedetecteerd.";
-    }
+    var total = entries.length;
+    var arc = 360 / total;
+    var normalizedAngle = (angle % 360 + 360) % 360;
+    var index = Math.floor((360 - normalizedAngle + arc / 2) % 360 / arc);
+    var winner = entries[index];
+    if (!winner)
+        return;
+    currentWinner = winner;
+    popupTitle.textContent = "\uD83C\uDF89 Winnaar: ".concat(winner.name);
+    popupImage.src = winner.imageUrl;
+    popup.style.display = "flex";
 }
-function toHex(n) {
-    return n.toString(16).padStart(2, '0');
+function updateNameList() {
+    nameList.innerHTML = "";
+    entries.forEach(function (entry) {
+        var card = document.createElement("div");
+        card.className = "name-card";
+        var img = document.createElement("img");
+        img.src = entry.imageUrl;
+        var text = document.createElement("div");
+        text.textContent = entry.name;
+        card.appendChild(img);
+        card.appendChild(text);
+        nameList.appendChild(card);
+    });
 }
 addBtn.addEventListener("click", function () {
     var _a;
@@ -107,7 +116,19 @@ addBtn.addEventListener("click", function () {
         nameInput.value = "";
         imageInput.value = "";
         drawWheel((angle * Math.PI) / 180);
+        updateNameList();
     };
     reader.readAsDataURL(file);
 });
 spinBtn.addEventListener("click", spinWheel);
+removeBtn.addEventListener("click", function () {
+    if (currentWinner) {
+        entries = entries.filter(function (e) { return e !== currentWinner; });
+        drawWheel((angle * Math.PI) / 180);
+        updateNameList();
+    }
+    popup.style.display = "none";
+});
+keepBtn.addEventListener("click", function () {
+    popup.style.display = "none";
+});

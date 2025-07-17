@@ -1,15 +1,15 @@
 body {
   font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
   margin: 0;
   background: #f2f2f2;
+  display: flex;
   flex-direction: column;
+  align-items: center;
+  padding: 20px;
 }
 
 .wheel-container {
+  position: relative;
   text-align: center;
 }
 
@@ -17,22 +17,33 @@ canvas {
   border: 8px solid #444;
   border-radius: 50%;
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  display: block;
+  margin: 0 auto;
+}
+
+.pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(180deg);
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 30px solid red;
+  z-index: 2;
 }
 
 .input-section {
   margin-top: 20px;
 }
 
-input[type="text"] {
+input[type="text"], input[type="file"] {
   padding: 10px;
   font-size: 16px;
-  width: 200px;
+  margin: 5px;
   border-radius: 5px;
   border: 1px solid #ccc;
-}
-
-input[type="file"] {
-  margin-left: 10px;
 }
 
 button {
@@ -50,17 +61,75 @@ button:hover {
   background-color: #218838;
 }
 
-#result {
+.name-list {
   margin-top: 20px;
-  font-size: 24px;
-  font-weight: bold;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
 }
 
-#winnerImage {
-  max-width: 200px;
-  max-height: 200px;
-  margin-top: 10px;
-  display: none;
-  border: 2px solid #000;
+.name-list .entry {
+  background: white;
+  padding: 10px;
+  border: 2px solid #ccc;
   border-radius: 8px;
+  text-align: center;
+  width: 120px;
+}
+
+.name-list img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-top: 5px;
+}
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.popup-content {
+  background: white;
+  padding: 30px;
+  text-align: center;
+  border-radius: 12px;
+  max-width: 90%;
+}
+
+.popup-content img {
+  max-width: 300px;
+  max-height: 300px;
+  border: 2px solid #000;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.popup-actions button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+@media (max-width: 600px) {
+  canvas {
+    width: 300px;
+    height: 300px;
+  }
+
+  .popup-content img {
+    max-width: 200px;
+    max-height: 200px;
+  }
 }
