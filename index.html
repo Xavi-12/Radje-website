@@ -3,15 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Radje - Spin the Wheel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>Spin het Radje!</h1>
+    <form class="add-form">
+        <input type="text" id="name-input" placeholder="Naam" required>
+        <input type="file" id="photo-input" accept="image/*">
+        <img id="preview-img" style="width:50px;height:50px;border-radius:50%;background:#ccc;display:none;">
+        <button type="submit">Toevoegen</button>
+    </form>
     <div class="wheel-container">
         <canvas id="wheel" width="400" height="400"></canvas>
-        <button id="spin-btn">Draai!</button>
+        <button id="spin-btn">Spin</button>
     </div>
-    <!-- Hier kun je later je TypeScript-bestand toevoegen -->
-    <!-- <script src="main.js"></script> -->
+    <!-- TypeScript wordt gecompileerd naar main.js -->
+    <script src="main.js"></script>
 </body>
 </html>
