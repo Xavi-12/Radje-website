@@ -11,6 +11,24 @@ window.addEventListener('DOMContentLoaded', function () {
     var nameInput = document.getElementById('nameInput');
     var imageInput = document.getElementById('imageInput');
     var namesList = document.getElementById('namesList');
+    var picker = document.querySelector('.picker');
+    // Mooie gouden pick boven het wiel
+    function updatePicker() {
+        picker.style.left = '50%';
+        picker.style.top = (wheel.offsetTop - 30) + 'px';
+        picker.style.transform = 'translateX(-50%)';
+        picker.style.width = '0';
+        picker.style.height = '0';
+        picker.style.borderLeft = '18px solid transparent';
+        picker.style.borderRight = '18px solid transparent';
+        picker.style.borderBottom = '38px solid gold';
+        picker.style.borderRadius = '6px';
+        picker.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        picker.style.position = 'absolute';
+        picker.style.zIndex = '2';
+    }
+    updatePicker();
+    window.addEventListener('resize', updatePicker);
     function drawWheel(angle) {
         if (angle === void 0) { angle = 0; }
         ctx.clearRect(0, 0, wheel.width, wheel.height);
@@ -21,24 +39,29 @@ window.addEventListener('DOMContentLoaded', function () {
         for (var i = 0; i < entries.length; i++) {
             var startAngle = angle + i * sliceAngle;
             var endAngle = startAngle + sliceAngle;
-            // Colorful slices
+            // Mooie gradient slices
+            var grad = ctx.createLinearGradient(centerX, centerY, centerX + Math.cos(startAngle) * radius, centerY + Math.sin(startAngle) * radius);
+            grad.addColorStop(0, "hsl(".concat(i * 360 / entries.length, ", 80%, 65%)"));
+            grad.addColorStop(1, "hsl(".concat(i * 360 / entries.length + 20, ", 70%, 50%)"));
             ctx.beginPath();
             ctx.moveTo(centerX, centerY);
             ctx.arc(centerX, centerY, radius, startAngle, endAngle);
             ctx.closePath();
-            ctx.fillStyle = "hsl(".concat(i * 360 / entries.length, ", 70%, 60%)");
+            ctx.fillStyle = grad;
             ctx.fill();
             ctx.strokeStyle = "#fff";
             ctx.lineWidth = 2;
             ctx.stroke();
-            // Name text
+            // Naam tekst
             ctx.save();
             ctx.translate(centerX, centerY);
             ctx.rotate(startAngle + sliceAngle / 2);
             ctx.textAlign = "right";
             ctx.font = "bold 20px Segoe UI";
             ctx.fillStyle = "#2d3a4b";
-            ctx.fillText(entries[i].name, radius - 20, 10);
+            ctx.shadowColor = "#fff";
+            ctx.shadowBlur = 4;
+            ctx.fillText(entries[i].name, radius - 30, 10);
             ctx.restore();
         }
     }
@@ -48,21 +71,23 @@ window.addEventListener('DOMContentLoaded', function () {
         spinning = true;
         spinBtn.disabled = true;
         winnerDisplay.textContent = "";
-        var spins = Math.floor(Math.random() * 3) + 5; // 5-7 spins
+        // Krachtigere draai: meer spins en random tijd
+        var spins = Math.floor(Math.random() * 4) + 7; // 7-10 rondjes
         var finalIndex = Math.floor(Math.random() * entries.length);
         winnerIndex = finalIndex;
         var sliceAngle = 2 * Math.PI / entries.length;
         var finalAngle = (3 * Math.PI / 2) - (finalIndex * sliceAngle) - (sliceAngle / 2);
         var start = currentAngle;
         var end = finalAngle + spins * 2 * Math.PI;
-        var duration = 4000;
+        var duration = Math.floor(Math.random() * 1200) + 3200; // 3200-4400ms
         var startTime = null;
         function animateWheel(ts) {
             if (!startTime)
                 startTime = ts;
             var elapsed = ts - startTime;
             var progress = Math.min(elapsed / duration, 1);
-            var ease = 1 - Math.pow(1 - progress, 3); // ease out cubic
+            // Sterkere ease out
+            var ease = 1 - Math.pow(1 - progress, 4);
             currentAngle = start + (end - start) * ease;
             drawWheel(currentAngle);
             if (progress < 1) {
@@ -80,13 +105,17 @@ window.addEventListener('DOMContentLoaded', function () {
         if (winnerIndex === null)
             return;
         var winner = entries[winnerIndex];
-        winnerDisplay.innerHTML = "\n        <div>\n            <strong>Winnaar: ".concat(winner.name, "</strong><br>\n            <img src=\"").concat(winner.image, "\" alt=\"Foto van ").concat(winner.name, "\" style=\"max-width:120px; border-radius:12px; margin-top:10px;\">\n        </div>\n        <button class=\"removeBtn\" id=\"removeWinnerBtn\">Winnaar verwijderen</button>\n    ");
+        winnerDisplay.innerHTML = "\n        <div>\n            <strong>Winnaar: ".concat(winner.name, "</strong><br>\n            <img src=\"").concat(winner.image, "\" alt=\"Foto van ").concat(winner.name, "\" style=\"max-width:120px; border-radius:12px; margin-top:10px; box-shadow:0 4px 16px gold;\">\n        </div>\n        <div style=\"margin-top:10px;\">\n            <button class=\"removeBtn\" id=\"removeWinnerBtn\">Winnaar verwijderen</button>\n            <button class=\"removeBtn\" id=\"keepWinnerBtn\" style=\"background:#27ae60; margin-left:8px;\">Winnaar houden</button>\n        </div>\n    ");
         document.getElementById('removeWinnerBtn').onclick = function () {
             entries.splice(winnerIndex, 1);
             winnerIndex = null;
             drawWheel(currentAngle);
             winnerDisplay.textContent = "";
             renderNamesList();
+        };
+        document.getElementById('keepWinnerBtn').onclick = function () {
+            winnerDisplay.textContent = "";
+            winnerIndex = null;
         };
     }
     function renderNamesList() {
