@@ -11,10 +11,10 @@ const wheel = document.getElementById('wheel') as HTMLCanvasElement;
 const ctx = wheel.getContext('2d')!;
 const spinBtn = document.getElementById('spin-btn') as HTMLButtonElement;
 
-// Helper: random pastel color
-function randomColor() {
+// Helper: random bright color
+function brightColor() {
     const hue = Math.floor(Math.random() * 360);
-    return `hsl(${hue}, 70%, 80%)`;
+    return `hsl(${hue}, 90%, 55%)`;
 }
 
 // Draw wheel
@@ -40,11 +40,26 @@ function drawWheel(rotation = 0) {
         ctx.rotate(startAngle + sliceAngle / 2);
         ctx.textAlign = "right";
         ctx.font = "18px Arial";
-        ctx.fillStyle = "#333";
+        ctx.fillStyle = "#fff";
         ctx.fillText(participants[i].name, radius - 20, 0);
         ctx.restore();
         startAngle += sliceAngle;
     }
+    drawPin();
+}
+
+// Draw pin above the wheel
+function drawPin() {
+    ctx.save();
+    ctx.translate(wheel.width / 2, 20);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-15, -30);
+    ctx.lineTo(15, -30);
+    ctx.closePath();
+    ctx.fillStyle = "#e74c3c";
+    ctx.fill();
+    ctx.restore();
 }
 
 // Spin logic
@@ -59,8 +74,8 @@ function spinWheel() {
     const n = participants.length;
     const sliceAngle = (2 * Math.PI) / n;
     winnerIndex = Math.floor(Math.random() * n);
-    // Target angle so winner is at top (12 o'clock)
-    targetAngle = (3 * Math.PI / 2) - (winnerIndex * sliceAngle) + (2 * Math.PI * 5); // 5 rounds
+    // Target angle so winner is at top (pin points to center of slice)
+    targetAngle = (3 * Math.PI / 2) - (winnerIndex * sliceAngle) - (sliceAngle / 2) + (2 * Math.PI * 5); // 5 rounds
     animateSpin();
 }
 
@@ -82,7 +97,7 @@ function animateSpin() {
     }
 }
 
-// Winner popup
+// Winner popup with remove button
 function showWinnerPopup() {
     const winner = participants[winnerIndex];
     const popup = document.createElement('div');
@@ -91,17 +106,22 @@ function showWinnerPopup() {
         <div class="winner-content">
             <img src="${winner.photo || ''}" style="width:100px;height:100px;border-radius:50%;background:${winner.photo ? 'none' : winner.color};object-fit:cover;">
             <h2>${winner.name}</h2>
+            <button id="remove-winner-btn">Verwijder winnaar van het rad</button>
         </div>
     `;
     document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), 2500); // auto close
-    // Option to remove winner
-    setTimeout(() => {
-        if (confirm('Winnaar verwijderen van het rad?')) {
-            participants.splice(winnerIndex, 1);
-            drawWheel();
-        }
-    }, 2600);
+
+    // Verwijder popup na 5 seconden automatisch
+    const autoClose = setTimeout(() => popup.remove(), 5000);
+
+    // Verwijder winnaar knop
+    const removeBtn = document.getElementById('remove-winner-btn');
+    removeBtn?.addEventListener('click', () => {
+        participants.splice(winnerIndex, 1);
+        drawWheel();
+        clearTimeout(autoClose);
+        popup.remove();
+    });
 }
 
 // Add participant UI
@@ -133,7 +153,7 @@ form.addEventListener('submit', e => {
     participants.push({
         name,
         photo: photo && previewImg.style.display !== 'none' ? photo : undefined,
-        color: randomColor()
+        color: brightColor()
     });
     nameInput.value = '';
     photoInput.value = '';
