@@ -1,3 +1,4 @@
+// main.ts
 interface Entry {
   name: string;
   color: string;
@@ -10,17 +11,12 @@ const nameInput = document.getElementById("nameInput") as HTMLInputElement;
 const imageInput = document.getElementById("imageInput") as HTMLInputElement;
 const addBtn = document.getElementById("addBtn") as HTMLButtonElement;
 const spinBtn = document.getElementById("spinBtn") as HTMLButtonElement;
-const entriesList = document.getElementById("entriesList") as HTMLDivElement;
-const winnerPopup = document.getElementById("winnerPopup") as HTMLDivElement;
-const winnerNameEl = document.getElementById("winnerName") as HTMLHeadingElement;
-const winnerPhoto = document.getElementById("winnerPhoto") as HTMLImageElement;
-const removeWinnerBtn = document.getElementById("removeWinnerBtn") as HTMLButtonElement;
-const keepWinnerBtn = document.getElementById("keepWinnerBtn") as HTMLButtonElement;
+const result = document.getElementById("result") as HTMLDivElement;
+const winnerImage = document.getElementById("winnerImage") as HTMLImageElement;
 
 let entries: Entry[] = [];
 let angle = 0;
 let isSpinning = false;
-let lastWinnerIndex: number | null = null;
 
 function getRandomColor(): string {
   const letters = "0123456789ABCDEF";
@@ -34,8 +30,6 @@ function getRandomColor(): string {
 function drawWheel(currentAngle: number) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const total = entries.length;
-  if (total === 0) return;
-
   const arc = (2 * Math.PI) / total;
 
   for (let i = 0; i < total; i++) {
@@ -49,47 +43,32 @@ function drawWheel(currentAngle: number) {
     ctx.arc(250, 250, 250, startAngle, endAngle);
     ctx.fill();
 
+    // Tekst op sector
     ctx.save();
     ctx.translate(250, 250);
     ctx.rotate(startAngle + arc / 2);
     ctx.textAlign = "right";
     ctx.fillStyle = "#000";
-    ctx.font = "bold 16px Arial";
+    ctx.font = "18px Arial";
     ctx.fillText(entry.name, 230, 10);
     ctx.restore();
   }
 
-  // Pointer
   ctx.fillStyle = "#000";
   ctx.beginPath();
   ctx.moveTo(250, 0);
-  ctx.lineTo(240, 30);
-  ctx.lineTo(260, 30);
-  ctx.closePath();
+  ctx.lineTo(240, 20);
+  ctx.lineTo(260, 20);
   ctx.fill();
-}
-
-function toHex(n: number): string {
-  return n.toString(16).padStart(2, "0");
-}
-
-function detectWinner() {
-  const pixel = ctx.getImageData(250, 25, 1, 1).data;
-  const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
-  const winnerIndex = entries.findIndex(e => e.color.toUpperCase() === rgb);
-
-  if (winnerIndex >= 0) {
-    lastWinnerIndex = winnerIndex;
-    showWinnerPopup(entries[winnerIndex]);
-  } else {
-    alert("Geen winnaar gevonden.");
-  }
 }
 
 function spinWheel() {
   if (isSpinning || entries.length === 0) return;
 
   isSpinning = true;
+  result.textContent = "";
+  winnerImage.style.display = "none";
+
   const spinAngle = Math.random() * 360 + 360 * 5;
   const duration = 4000;
   const start = performance.now();
@@ -113,54 +92,25 @@ function spinWheel() {
   requestAnimationFrame(animate);
 }
 
-function showWinnerPopup(winner: Entry) {
-  winnerNameEl.textContent = `🎉 ${winner.name}`;
-  winnerPhoto.src = winner.imageUrl;
-  winnerPopup.classList.remove("hidden");
-}
+function detectWinner() {
+  const pointerX = 250;
+  const pointerY = 30;
+  const pixel = ctx.getImageData(pointerX, pointerY, 1, 1).data;
+  const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
 
-removeWinnerBtn.onclick = () => {
-  if (lastWinnerIndex !== null) {
-    entries.splice(lastWinnerIndex, 1);
-    drawWheel((angle * Math.PI) / 180);
-    updateEntriesList();
+  const winner = entries.find(e => e.color.toUpperCase() === rgb);
+  if (winner) {
+    result.textContent = `🎉 Winnaar: ${winner.name}`;
+  } else {
+    result.textContent = "Geen winnaar gedetecteerd.";
   }
-  winnerPopup.classList.add("hidden");
-};
-
-keepWinnerBtn.onclick = () => {
-  winnerPopup.classList.add("hidden");
-};
-
-function updateEntriesList() {
-  entriesList.innerHTML = "";
-  entries.forEach((entry, index) => {
-    const card = document.createElement("div");
-    card.className = "entry-card";
-
-    const img = document.createElement("img");
-    img.src = entry.imageUrl;
-    img.alt = entry.name;
-
-    const name = document.createElement("div");
-    name.textContent = entry.name;
-
-    const btn = document.createElement("button");
-    btn.textContent = "Verwijder";
-    btn.onclick = () => {
-      entries.splice(index, 1);
-      drawWheel((angle * Math.PI) / 180);
-      updateEntriesList();
-    };
-
-    card.appendChild(img);
-    card.appendChild(name);
-    card.appendChild(btn);
-    entriesList.appendChild(card);
-  });
 }
 
-addBtn.onclick = () => {
+function toHex(n: number): string {
+  return n.toString(16).padStart(2, '0');
+}
+
+addBtn.addEventListener("click", () => {
   const name = nameInput.value.trim();
   const file = imageInput.files?.[0];
   if (!name || !file) return;
@@ -168,13 +118,17 @@ addBtn.onclick = () => {
   const reader = new FileReader();
   reader.onload = () => {
     const imageUrl = reader.result as string;
-    entries.push({ name, imageUrl, color: getRandomColor() });
+    const newEntry: Entry = {
+      name,
+      color: getRandomColor(),
+      imageUrl
+    };
+    entries.push(newEntry);
     nameInput.value = "";
     imageInput.value = "";
     drawWheel((angle * Math.PI) / 180);
-    updateEntriesList();
   };
   reader.readAsDataURL(file);
-};
+});
 
-spinBtn.onclick = spinWheel;
+spinBtn.addEventListener("click", spinWheel);
