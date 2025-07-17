@@ -1,135 +1,112 @@
-window.addEventListener('DOMContentLoaded', function () {
-    // HTML-elementen ophalen
-    var form = document.getElementById('player-form');
-    var nameInput = document.getElementById('name');
-    var imageInput = document.getElementById('image');
-    var canvas = document.getElementById('wheel');
-    var spinButton = document.getElementById('spin-btn');
-    var winnerPopup = document.getElementById('winner-popup');
-    var winnerName = document.getElementById('winner-name');
-    var winnerImage = document.getElementById('winner-image');
-    var closePopupBtn = document.getElementById('close-popup');
-    var ctx = canvas.getContext('2d');
-    canvas.width = 400;
-    canvas.height = 400;
-    var players = [];
-    var rotation = 0;
-    var isSpinning = false;
-    // Kleurengenerator
-    function getColor(index) {
-        var hue = index * (360 / players.length);
-        return "hsl(".concat(hue, ", 70%, 60%)");
-    }
-    // Rad tekenen
-    function drawWheel() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        var radius = canvas.width / 2;
-        var centerX = canvas.width / 2;
-        var centerY = canvas.height / 2;
-        var anglePerSlice = (2 * Math.PI) / players.length;
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(rotation);
-        players.forEach(function (player, i) {
-            var startAngle = i * anglePerSlice;
-            var endAngle = startAngle + anglePerSlice;
-            // Slice
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.arc(0, 0, radius, startAngle, endAngle);
-            ctx.fillStyle = getColor(i);
-            ctx.fill();
-            ctx.strokeStyle = '#fff';
-            ctx.stroke();
-            // Naam
-            ctx.save();
-            ctx.rotate(startAngle + anglePerSlice / 2);
-            ctx.translate(radius * 0.65, 0);
-            ctx.rotate(Math.PI / 2);
-            ctx.fillStyle = '#000';
-            ctx.font = '14px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(player.name, 0, 0);
-            ctx.restore();
-        });
-        ctx.restore();
-        drawPointer();
-    }
-    // Pointer tekenen (bovenkant)
-    function drawPointer() {
-        var size = 20;
+var canvas = document.getElementById('wheel');
+var ctx = canvas.getContext('2d');
+var spinBtn = document.getElementById('spinBtn');
+var namesForm = document.getElementById('namesForm');
+var namesInput = document.getElementById('namesInput');
+var winnerPopup = document.getElementById('winnerPopup');
+var winnerNameElem = document.getElementById('winnerName');
+var closePopupBtn = document.getElementById('closePopupBtn');
+var names = [];
+var startAngle = 0;
+var arc = 0;
+var spinning = false;
+var finalAngle = 0;
+var FULL_ROTATION = 2 * Math.PI;
+function drawWheel() {
+    var width = canvas.width;
+    var height = canvas.height;
+    var centerX = width / 2;
+    var centerY = height / 2;
+    var outsideRadius = Math.min(centerX, centerY) - 10;
+    var textRadius = outsideRadius - 40;
+    var insideRadius = 50;
+    ctx.clearRect(0, 0, width, height);
+    arc = FULL_ROTATION / names.length;
+    for (var i = 0; i < names.length; i++) {
+        var angle = startAngle + i * arc;
+        ctx.fillStyle = "hsl(".concat((i * 360) / names.length, ", 70%, 70%)");
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(canvas.width / 2 - size / 2, 10);
-        ctx.lineTo(canvas.width / 2 + size / 2, 10);
-        ctx.lineTo(canvas.width / 2, 30);
-        ctx.fillStyle = '#000';
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, outsideRadius, angle, angle + arc, false);
+        ctx.lineTo(centerX, centerY);
         ctx.fill();
+        ctx.stroke();
+        ctx.save();
+        ctx.fillStyle = '#333';
+        ctx.translate(centerX + Math.cos(angle + arc / 2) * textRadius, centerY + Math.sin(angle + arc / 2) * textRadius);
+        ctx.rotate(angle + arc / 2 + Math.PI / 2);
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 16px Arial';
+        var text = names[i].length > 12 ? names[i].slice(0, 12) + '…' : names[i];
+        ctx.fillText(text, 0, 0);
+        ctx.restore();
     }
-    // Winnaar bepalen op basis van rotatie
-    function getWinner() {
-        var anglePerSlice = 2 * Math.PI / players.length;
-        var normalizedRotation = (2 * Math.PI - (rotation % (2 * Math.PI))) % (2 * Math.PI);
-        var index = Math.floor(normalizedRotation / anglePerSlice);
-        return players[index];
-    }
-    // Spin-animatie
-    function spinWheel() {
-        if (isSpinning || players.length === 0)
-            return;
-        isSpinning = true;
-        var extraRotations = 5 * 2 * Math.PI;
-        var randomSlice = Math.floor(Math.random() * players.length);
-        var anglePerSlice = 2 * Math.PI / players.length;
-        var targetRotation = randomSlice * anglePerSlice;
-        var finalRotation = extraRotations + targetRotation;
-        var duration = 4000;
-        var start = performance.now();
-        var initialRotation = rotation;
-        function animate(time) {
-            var elapsed = time - start;
-            var progress = Math.min(elapsed / duration, 1);
-            var easeOut = 1 - Math.pow(1 - progress, 3);
-            rotation = initialRotation + easeOut * (finalRotation - initialRotation);
-            drawWheel();
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            }
-            else {
-                isSpinning = false;
-                var winner = getWinner();
-                showWinner(winner);
-            }
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, insideRadius, 0, FULL_ROTATION);
+    ctx.fillStyle = '#fff';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 3;
+    ctx.fill();
+    ctx.stroke();
+}
+function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+}
+function spin() {
+    if (spinning)
+        return;
+    spinning = true;
+    spinBtn.disabled = true;
+    var rotations = Math.random() * 3 + 3;
+    var randomAngle = Math.random() * FULL_ROTATION;
+    var totalRotation = rotations * FULL_ROTATION + randomAngle;
+    var duration = 5000;
+    var startTime = performance.now();
+    function animate(time) {
+        var elapsed = time - startTime;
+        var t = Math.min(elapsed / duration, 1);
+        var easedT = easeOutCubic(t);
+        startAngle = (totalRotation * easedT) % FULL_ROTATION;
+        finalAngle = startAngle;
+        drawWheel();
+        if (t < 1) {
+            requestAnimationFrame(animate);
         }
-        requestAnimationFrame(animate);
+        else {
+            spinning = false;
+            spinBtn.disabled = false;
+            determineWinner();
+        }
     }
-    // Winnaar-popup tonen
-    function showWinner(player) {
-        winnerName.textContent = player.name;
-        winnerImage.src = player.image;
-        winnerPopup.classList.add('visible');
+    requestAnimationFrame(animate);
+}
+function determineWinner() {
+    var winnerIndex = Math.floor((finalAngle % FULL_ROTATION) / arc);
+    winnerNameElem.textContent = names[winnerIndex];
+    winnerPopup.classList.remove('hidden');
+}
+namesForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var inputText = namesInput.value.trim();
+    if (!inputText) {
+        alert('Voer minstens 1 naam in.');
+        return;
     }
-    // Events
-    form.addEventListener('submit', function (e) {
-        var _a;
-        e.preventDefault();
-        var name = nameInput.value.trim();
-        var file = (_a = imageInput.files) === null || _a === void 0 ? void 0 : _a[0];
-        if (!name || !file)
-            return;
-        var reader = new FileReader();
-        reader.onload = function () {
-            var imageBase64 = reader.result;
-            players.push({ name: name, image: imageBase64 });
-            nameInput.value = '';
-            imageInput.value = '';
-            drawWheel();
-        };
-        reader.readAsDataURL(file);
-    });
-    spinButton.addEventListener('click', spinWheel);
-    closePopupBtn.addEventListener('click', function () {
-        winnerPopup.classList.remove('visible');
-    });
-    // Eerste keer tekenen (leeg rad)
+    names = inputText.split('\n').map(function (n) { return n.trim(); }).filter(function (n) { return n.length > 0; });
+    if (names.length < 2) {
+        alert('Voer minstens 2 namen in.');
+        return;
+    }
+    startAngle = 0;
     drawWheel();
+    spinBtn.disabled = false;
 });
+spinBtn.addEventListener('click', spin);
+closePopupBtn.addEventListener('click', function () {
+    winnerPopup.classList.add('hidden');
+});
+window.onload = function () {
+    spinBtn.disabled = true;
+};

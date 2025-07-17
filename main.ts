@@ -1,165 +1,137 @@
-window.addEventListener('DOMContentLoaded', () => {
-// HTML-elementen ophalen
-const form = document.getElementById('player-form') as HTMLFormElement;
-const nameInput = document.getElementById('name') as HTMLInputElement;
-const imageInput = document.getElementById('image') as HTMLInputElement;
 const canvas = document.getElementById('wheel') as HTMLCanvasElement;
-const spinButton = document.getElementById('spin-btn') as HTMLButtonElement;
-const winnerPopup = document.getElementById('winner-popup') as HTMLDivElement;
-const winnerName = document.getElementById('winner-name') as HTMLHeadingElement;
-const winnerImage = document.getElementById('winner-image') as HTMLImageElement;
-const closePopupBtn = document.getElementById('close-popup') as HTMLButtonElement;
-
 const ctx = canvas.getContext('2d')!;
-canvas.width = 400;
-canvas.height = 400;
+const spinBtn = document.getElementById('spinBtn') as HTMLButtonElement;
+const namesForm = document.getElementById('namesForm') as HTMLFormElement;
+const namesInput = document.getElementById('namesInput') as HTMLTextAreaElement;
+const winnerPopup = document.getElementById('winnerPopup') as HTMLDivElement;
+const winnerNameElem = document.getElementById('winnerName') as HTMLParagraphElement;
+const closePopupBtn = document.getElementById('closePopupBtn') as HTMLButtonElement;
 
-// Data opslaan
-interface Player {
-  name: string;
-  image: string; // base64
-}
-const players: Player[] = [];
+let names: string[] = [];
+let startAngle = 0;
+let arc = 0;
+let spinning = false;
+let finalAngle = 0;
 
-let rotation = 0;
-let isSpinning = false;
+const FULL_ROTATION = 2 * Math.PI;
 
-// Kleurengenerator
-function getColor(index: number): string {
-  const hue = index * (360 / players.length);
-  return `hsl(${hue}, 70%, 60%)`;
-}
+function drawWheel(): void {
+  const width = canvas.width;
+  const height = canvas.height;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const outsideRadius = Math.min(centerX, centerY) - 10;
+  const textRadius = outsideRadius - 40;
+  const insideRadius = 50;
 
-// Rad tekenen
-function drawWheel() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, width, height);
 
-  const radius = canvas.width / 2;
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2;
-  const anglePerSlice = (2 * Math.PI) / players.length;
+  arc = FULL_ROTATION / names.length;
 
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.rotate(rotation);
+  for (let i = 0; i < names.length; i++) {
+    const angle = startAngle + i * arc;
+    ctx.fillStyle = `hsl(${(i * 360) / names.length}, 70%, 70%)`;
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
 
-  players.forEach((player, i) => {
-    const startAngle = i * anglePerSlice;
-    const endAngle = startAngle + anglePerSlice;
-
-    // Slice
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.arc(0, 0, radius, startAngle, endAngle);
-    ctx.fillStyle = getColor(i);
+    ctx.moveTo(centerX, centerY);
+    ctx.arc(centerX, centerY, outsideRadius, angle, angle + arc, false);
+    ctx.lineTo(centerX, centerY);
     ctx.fill();
-    ctx.strokeStyle = '#fff';
     ctx.stroke();
 
-    // Naam
     ctx.save();
-    ctx.rotate(startAngle + anglePerSlice / 2);
-    ctx.translate(radius * 0.65, 0);
-    ctx.rotate(Math.PI / 2);
-    ctx.fillStyle = '#000';
-    ctx.font = '14px sans-serif';
+    ctx.fillStyle = '#333';
+    ctx.translate(
+      centerX + Math.cos(angle + arc / 2) * textRadius,
+      centerY + Math.sin(angle + arc / 2) * textRadius
+    );
+    ctx.rotate(angle + arc / 2 + Math.PI / 2);
     ctx.textAlign = 'center';
-    ctx.fillText(player.name, 0, 0);
+    ctx.font = 'bold 16px Arial';
+    const text = names[i].length > 12 ? names[i].slice(0, 12) + '…' : names[i];
+    ctx.fillText(text, 0, 0);
     ctx.restore();
-  });
+  }
 
-  ctx.restore();
-
-  drawPointer();
-}
-
-// Pointer tekenen (bovenkant)
-function drawPointer() {
-  const size = 20;
   ctx.beginPath();
-  ctx.moveTo(canvas.width / 2 - size / 2, 10);
-  ctx.lineTo(canvas.width / 2 + size / 2, 10);
-  ctx.lineTo(canvas.width / 2, 30);
-  ctx.fillStyle = '#000';
+  ctx.arc(centerX, centerY, insideRadius, 0, FULL_ROTATION);
+  ctx.fillStyle = '#fff';
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 3;
   ctx.fill();
+  ctx.stroke();
 }
 
-// Winnaar bepalen op basis van rotatie
-function getWinner(): Player {
-  const anglePerSlice = 2 * Math.PI / players.length;
-  const normalizedRotation = (2 * Math.PI - (rotation % (2 * Math.PI))) % (2 * Math.PI);
-  const index = Math.floor(normalizedRotation / anglePerSlice);
-  return players[index];
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
 }
 
-// Spin-animatie
-function spinWheel() {
-  if (isSpinning || players.length === 0) return;
+function spin(): void {
+  if (spinning) return;
+  spinning = true;
+  spinBtn.disabled = true;
 
-  isSpinning = true;
-  const extraRotations = 5 * 2 * Math.PI;
-  const randomSlice = Math.floor(Math.random() * players.length);
-  const anglePerSlice = 2 * Math.PI / players.length;
-  const targetRotation = randomSlice * anglePerSlice;
-  const finalRotation = extraRotations + targetRotation;
+  const rotations = Math.random() * 3 + 3;
+  const randomAngle = Math.random() * FULL_ROTATION;
+  const totalRotation = rotations * FULL_ROTATION + randomAngle;
 
-  const duration = 4000;
-  const start = performance.now();
-  const initialRotation = rotation;
+  const duration = 5000;
+  const startTime = performance.now();
 
   function animate(time: number) {
-    const elapsed = time - start;
-    const progress = Math.min(elapsed / duration, 1);
-    const easeOut = 1 - Math.pow(1 - progress, 3);
-
-    rotation = initialRotation + easeOut * (finalRotation - initialRotation);
+    const elapsed = time - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const easedT = easeOutCubic(t);
+    startAngle = (totalRotation * easedT) % FULL_ROTATION;
+    finalAngle = startAngle;
     drawWheel();
 
-    if (progress < 1) {
+    if (t < 1) {
       requestAnimationFrame(animate);
     } else {
-      isSpinning = false;
-      const winner = getWinner();
-      showWinner(winner);
+      spinning = false;
+      spinBtn.disabled = false;
+      determineWinner();
     }
   }
 
   requestAnimationFrame(animate);
 }
 
-// Winnaar-popup tonen
-function showWinner(player: Player) {
-  winnerName.textContent = player.name;
-  winnerImage.src = player.image;
-  winnerPopup.classList.add('visible');
+function determineWinner(): void {
+  const winnerIndex = Math.floor((finalAngle % FULL_ROTATION) / arc);
+  winnerNameElem.textContent = names[winnerIndex];
+  winnerPopup.classList.remove('hidden');
 }
 
-// Events
-form.addEventListener('submit', (e) => {
+namesForm.addEventListener('submit', e => {
   e.preventDefault();
-  const name = nameInput.value.trim();
-  const file = imageInput.files?.[0];
+  const inputText = namesInput.value.trim();
+  if (!inputText) {
+    alert('Voer minstens 1 naam in.');
+    return;
+  }
 
-  if (!name || !file) return;
+  names = inputText.split('\n').map(n => n.trim()).filter(n => n.length > 0);
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    const imageBase64 = reader.result as string;
-    players.push({ name, image: imageBase64 });
-    nameInput.value = '';
-    imageInput.value = '';
-    drawWheel();
-  };
-  reader.readAsDataURL(file);
+  if (names.length < 2) {
+    alert('Voer minstens 2 namen in.');
+    return;
+  }
+
+  startAngle = 0;
+  drawWheel();
+  spinBtn.disabled = false;
 });
 
-spinButton.addEventListener('click', spinWheel);
+spinBtn.addEventListener('click', spin);
+
 closePopupBtn.addEventListener('click', () => {
-  winnerPopup.classList.remove('visible');
+  winnerPopup.classList.add('hidden');
 });
 
-// Eerste keer tekenen (leeg rad)
-drawWheel();
-
-
-});
+window.onload = () => {
+  spinBtn.disabled = true;
+};

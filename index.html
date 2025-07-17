@@ -4,31 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spin the Wheel</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main>
+  <div class="container">
     <h1>Spin the Wheel</h1>
 
-    <form id="player-form">
-      <input type="text" id="name" placeholder="Naam" required />
-      <input type="file" id="image" accept="image/*" required />
-      <button type="submit">Toevoegen</button>
+    <form id="namesForm">
+      <label for="namesInput">Voer namen in (één per regel):</label><br />
+      <textarea id="namesInput" rows="6" placeholder="Naam 1&#10;Naam 2&#10;Naam 3"></textarea><br />
+      <button type="submit">Laad Namen</button>
     </form>
 
-    <canvas id="wheel" role="img" aria-label="Draaiwiel" tabindex="0"></canvas>
+    <canvas id="wheel" width="400" height="400" aria-label="Spin the wheel"></canvas>
 
-    <button id="spin-btn" aria-label="Draai het rad">Draaien</button>
+    <button id="spinBtn" disabled>Spin het wiel!</button>
 
-    <div id="winner-popup" role="dialog" aria-modal="true" aria-labelledby="winner-name" tabindex="-1">
+    <div id="winnerPopup" class="hidden">
       <div class="popup-content">
-        <h2 id="winner-name"></h2>
-        <img id="winner-image" alt="Afbeelding winnaar" />
-        <button id="close-popup" aria-label="Sluit winnaar popup">Sluiten</button>
+        <p>De winnaar is:</p>
+        <p id="winnerName" class="winner-name"></p>
+        <button id="closePopupBtn">Sluiten</button>
       </div>
     </div>
-  </main>
+  </div>
 
-  <script src="main.js" type="module"></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
