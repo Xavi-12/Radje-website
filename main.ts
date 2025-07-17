@@ -93,8 +93,8 @@ function spinWheel() {
 }
 
 function detectWinner() {
-  const pointerX = 280;
-  const pointerY = 0;
+  const pointerX = 250;
+  const pointerY = 20;
   const pixel = ctx.getImageData(pointerX, pointerY, 1, 1).data;
   const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
 
