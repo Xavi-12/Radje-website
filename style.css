@@ -2,7 +2,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #ece9e6, #ffffff);
+  background: linear-gradient(135deg, #232526, #414345); /* Donkerder */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -10,13 +10,13 @@ body {
 }
 
 .container {
-  max-width: 500px;
+  max-width: 600px;
   width: 100%;
   text-align: center;
-  padding: 20px;
-  background-color: white;
+  padding: 32px;
+  background-color: #fff;
   border-radius: 15px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 20px rgba(0,0,0,0.25);
 }
 
 canvas {
@@ -26,20 +26,23 @@ canvas {
   max-width: 500px;
 }
 
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  margin: 10px 5px;
+button, .popup-btn {
+  padding: 12px 24px;
+  font-size: 18px;
+  margin: 12px 6px;
   border: none;
-  border-radius: 10px;
-  background-color: #007bff;
-  color: white;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #1976d2 60%, #21cbf3 100%);
+  color: #fff;
+  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s;
+  box-shadow: 0 2px 8px rgba(33, 203, 243, 0.15);
+  transition: background 0.3s, transform 0.2s;
 }
 
-button:hover {
-  background-color: #0056b3;
+button:hover, .popup-btn:hover {
+  background: linear-gradient(90deg, #1565c0 60%, #1de9b6 100%);
+  transform: translateY(-2px) scale(1.04);
 }
 
 form {
@@ -48,13 +51,21 @@ form {
 
 input[type="text"],
 input[type="file"] {
-  padding: 8px;
-  margin: 5px;
-  width: calc(100% - 22px);
-  max-width: 400px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  width: calc(100% - 24px);
+  max-width: 420px;
+  border: 1.5px solid #1976d2;
+  border-radius: 10px;
   box-sizing: border-box;
+  font-size: 17px;
+  background: #f4f8fb;
+  transition: border 0.2s;
+}
+
+input[type="text"]:focus, input[type="file"]:focus {
+  border-color: #21cbf3;
+  outline: none;
 }
 
 #winnerDisplay {
@@ -70,15 +81,16 @@ input[type="file"] {
   margin: auto;
   background: #fff;
   z-index: 1000;
-  max-width: 90vw;
-  width: 350px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  border-radius: 16px;
-  padding: 24px 16px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  border-radius: 18px;
+  padding: 40px 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  font-size: 1.3rem;
 }
 
 .popup-btn {
@@ -132,13 +144,24 @@ ul#namesList li {
 }
 
 @media (max-width: 600px) {
-  .winner-popup {
-    width: 95vw;
-    padding: 16px 4vw;
-    font-size: 1.1rem;
+  .container {
+    max-width: 100vw;
+    padding: 10px 2vw;
   }
-  .popup-btn {
-    font-size: 1rem;
-    padding: 12px 0;
+  .winner-popup {
+    width: 98vw;
+    max-width: 98vw;
+    padding: 18px 2vw;
+    font-size: 1.2rem;
+  }
+  button, .popup-btn {
+    font-size: 1.1rem;
+    padding: 16px 0;
+    margin: 10px 0;
+  }
+  input[type="text"], input[type="file"] {
+    font-size: 1.1rem;
+    padding: 16px;
+    max-width: 98vw;
   }
 }

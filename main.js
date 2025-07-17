@@ -97,7 +97,10 @@ window.addEventListener('DOMContentLoaded', function () {
     }
     function pickWinner() {
         var sliceAngle = (2 * Math.PI) / participants.length;
-        var index = participants.length - Math.floor((rotation % (2 * Math.PI)) / sliceAngle) - 1;
+        // De picker wijst naar 0 radianen (bovenaan het rad)
+        // Corrigeer de rotatie zodat 0 radianen overeenkomt met het bovenste segment
+        var normalizedRotation = (2 * Math.PI - (rotation % (2 * Math.PI))) % (2 * Math.PI);
+        var index = Math.floor(normalizedRotation / sliceAngle);
         var winner = participants[index];
         if (!winner)
             return;

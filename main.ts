@@ -117,7 +117,10 @@ function spinWheel() {
 
 function pickWinner() {
   const sliceAngle = (2 * Math.PI) / participants.length;
-  const index = participants.length - Math.floor((rotation % (2 * Math.PI)) / sliceAngle) - 1;
+  // De picker wijst naar 0 radianen (bovenaan het rad)
+  // Corrigeer de rotatie zodat 0 radianen overeenkomt met het bovenste segment
+  let normalizedRotation = (2 * Math.PI - (rotation % (2 * Math.PI))) % (2 * Math.PI);
+  const index = Math.floor(normalizedRotation / sliceAngle);
   const winner = participants[index];
 
   if (!winner) return;
