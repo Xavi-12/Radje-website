@@ -10,13 +10,18 @@ const nameInput = document.getElementById("nameInput") as HTMLInputElement;
 const imageInput = document.getElementById("imageInput") as HTMLInputElement;
 const addBtn = document.getElementById("addBtn") as HTMLButtonElement;
 const spinBtn = document.getElementById("spinBtn") as HTMLButtonElement;
-const result = document.getElementById("result") as HTMLDivElement;
-const winnerImage = document.getElementById("winnerImage") as HTMLImageElement;
 const entriesList = document.getElementById("entriesList") as HTMLDivElement;
+
+const winnerPopup = document.getElementById("winnerPopup") as HTMLDivElement;
+const winnerNameEl = document.getElementById("winnerName") as HTMLHeadingElement;
+const winnerPhoto = document.getElementById("winnerPhoto") as HTMLImageElement;
+const removeWinnerBtn = document.getElementById("removeWinnerBtn") as HTMLButtonElement;
+const keepWinnerBtn = document.getElementById("keepWinnerBtn") as HTMLButtonElement;
 
 let entries: Entry[] = [];
 let angle = 0;
 let isSpinning = false;
+let lastWinnerIndex: number | null = null;
 
 function getRandomColor(): string {
   const letters = "0123456789ABCDEF";
@@ -43,7 +48,6 @@ function drawWheel(currentAngle: number) {
     ctx.arc(250, 250, 250, startAngle, endAngle);
     ctx.fill();
 
-    // Tekst op sector
     ctx.save();
     ctx.translate(250, 250);
     ctx.rotate(startAngle + arc / 2);
@@ -54,7 +58,6 @@ function drawWheel(currentAngle: number) {
     ctx.restore();
   }
 
-  // Pointer
   ctx.fillStyle = "#000";
   ctx.beginPath();
   ctx.moveTo(250, 0);
@@ -67,9 +70,7 @@ function spinWheel() {
   if (isSpinning || entries.length === 0) return;
 
   isSpinning = true;
-  result.textContent = "";
-  winnerImage.style.display = "none";
-
+  lastWinnerIndex = null;
   const spinAngle = Math.random() * 360 + 360 * 5;
   const duration = 4000;
   const start = performance.now();
@@ -99,15 +100,34 @@ function detectWinner() {
   const pixel = ctx.getImageData(pointerX, pointerY, 1, 1).data;
   const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
 
-  const winner = entries.find(e => e.color.toUpperCase() === rgb);
-  if (winner) {
-    result.textContent = `🎉 Winnaar: ${winner.name}`;
-    winnerImage.src = winner.imageUrl;
-    winnerImage.style.display = "block";
+  const winnerIndex = entries.findIndex(e => e.color.toUpperCase() === rgb);
+  if (winnerIndex >= 0) {
+    const winner = entries[winnerIndex];
+    lastWinnerIndex = winnerIndex;
+    showWinnerPopup(winner);
   } else {
-    result.textContent = "Geen winnaar gedetecteerd.";
+    alert("Geen winnaar gedetecteerd.");
   }
 }
+
+function showWinnerPopup(winner: Entry) {
+  winnerNameEl.textContent = `🎉 ${winner.name}`;
+  winnerPhoto.src = winner.imageUrl;
+  winnerPopup.classList.remove("hidden");
+}
+
+removeWinnerBtn.addEventListener("click", () => {
+  if (lastWinnerIndex !== null) {
+    entries.splice(lastWinnerIndex, 1);
+    drawWheel((angle * Math.PI) / 180);
+    updateEntriesList();
+  }
+  winnerPopup.classList.add("hidden");
+});
+
+keepWinnerBtn.addEventListener("click", () => {
+  winnerPopup.classList.add("hidden");
+});
 
 function toHex(n: number): string {
   return n.toString(16).padStart(2, '0');

@@ -4,12 +4,16 @@ var nameInput = document.getElementById("nameInput");
 var imageInput = document.getElementById("imageInput");
 var addBtn = document.getElementById("addBtn");
 var spinBtn = document.getElementById("spinBtn");
-var result = document.getElementById("result");
-var winnerImage = document.getElementById("winnerImage");
 var entriesList = document.getElementById("entriesList");
+var winnerPopup = document.getElementById("winnerPopup");
+var winnerNameEl = document.getElementById("winnerName");
+var winnerPhoto = document.getElementById("winnerPhoto");
+var removeWinnerBtn = document.getElementById("removeWinnerBtn");
+var keepWinnerBtn = document.getElementById("keepWinnerBtn");
 var entries = [];
 var angle = 0;
 var isSpinning = false;
+var lastWinnerIndex = null;
 function getRandomColor() {
     var letters = "0123456789ABCDEF";
     var color = "#";
@@ -31,7 +35,6 @@ function drawWheel(currentAngle) {
         ctx.moveTo(250, 250);
         ctx.arc(250, 250, 250, startAngle, endAngle);
         ctx.fill();
-        // Tekst op sector
         ctx.save();
         ctx.translate(250, 250);
         ctx.rotate(startAngle + arc / 2);
@@ -41,7 +44,6 @@ function drawWheel(currentAngle) {
         ctx.fillText(entry.name, 230, 10);
         ctx.restore();
     }
-    // Pointer
     ctx.fillStyle = "#000";
     ctx.beginPath();
     ctx.moveTo(250, 0);
@@ -53,8 +55,7 @@ function spinWheel() {
     if (isSpinning || entries.length === 0)
         return;
     isSpinning = true;
-    result.textContent = "";
-    winnerImage.style.display = "none";
+    lastWinnerIndex = null;
     var spinAngle = Math.random() * 360 + 360 * 5;
     var duration = 4000;
     var start = performance.now();
@@ -80,16 +81,32 @@ function detectWinner() {
     var pointerY = 20;
     var pixel = ctx.getImageData(pointerX, pointerY, 1, 1).data;
     var rgb = "#".concat(toHex(pixel[0])).concat(toHex(pixel[1])).concat(toHex(pixel[2])).toUpperCase();
-    var winner = entries.find(function (e) { return e.color.toUpperCase() === rgb; });
-    if (winner) {
-        result.textContent = "\uD83C\uDF89 Winnaar: ".concat(winner.name);
-        winnerImage.src = winner.imageUrl;
-        winnerImage.style.display = "block";
+    var winnerIndex = entries.findIndex(function (e) { return e.color.toUpperCase() === rgb; });
+    if (winnerIndex >= 0) {
+        var winner = entries[winnerIndex];
+        lastWinnerIndex = winnerIndex;
+        showWinnerPopup(winner);
     }
     else {
-        result.textContent = "Geen winnaar gedetecteerd.";
+        alert("Geen winnaar gedetecteerd.");
     }
 }
+function showWinnerPopup(winner) {
+    winnerNameEl.textContent = "\uD83C\uDF89 ".concat(winner.name);
+    winnerPhoto.src = winner.imageUrl;
+    winnerPopup.classList.remove("hidden");
+}
+removeWinnerBtn.addEventListener("click", function () {
+    if (lastWinnerIndex !== null) {
+        entries.splice(lastWinnerIndex, 1);
+        drawWheel((angle * Math.PI) / 180);
+        updateEntriesList();
+    }
+    winnerPopup.classList.add("hidden");
+});
+keepWinnerBtn.addEventListener("click", function () {
+    winnerPopup.classList.add("hidden");
+});
 function toHex(n) {
     return n.toString(16).padStart(2, '0');
 }
