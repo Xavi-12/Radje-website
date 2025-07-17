@@ -1,26 +1,34 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Draai het Rad</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spin the Wheel</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <h1>Draai het Rad</h1>
-        <form id="addNameForm">
-            <input type="text" id="nameInput" placeholder="Voer naam in" required>
-            <input type="file" id="imageInput" accept="image/*" required>
-            <button type="submit">Naam toevoegen</button>
-        </form>
-        <canvas id="wheel" width="500" height="500"></canvas>
-        <div class="picker"></div>
-        <button id="spinBtn">Draai</button>
-        <div id="winnerDisplay"></div>
-        <ul id="namesList"></ul>
-        <div id="previewContainer"></div>
+  <main>
+    <h1>Spin the Wheel</h1>
+
+    <form id="player-form">
+      <input type="text" id="name" placeholder="Naam" required />
+      <input type="file" id="image" accept="image/*" required />
+      <button type="submit">Toevoegen</button>
+    </form>
+
+    <canvas id="wheel" role="img" aria-label="Draaiwiel" tabindex="0"></canvas>
+
+    <button id="spin-btn" aria-label="Draai het rad">Draaien</button>
+
+    <div id="winner-popup" role="dialog" aria-modal="true" aria-labelledby="winner-name" tabindex="-1">
+      <div class="popup-content">
+        <h2 id="winner-name"></h2>
+        <img id="winner-image" alt="Afbeelding winnaar" />
+        <button id="close-popup" aria-label="Sluit winnaar popup">Sluiten</button>
+      </div>
     </div>
-    <script src="main.js"></script>
+  </main>
+
+  <script src="main.js" type="module"></script>
 </body>
 </html>
