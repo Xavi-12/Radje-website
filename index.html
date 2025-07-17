@@ -1,0 +1,22 @@
+<head>
+    <meta charset="UTF-8">
+    <title>Draai het Rad</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background">
+        <div class="container">
+            <h1>Draai het Rad</h1>
+            <canvas id="wheel" width="500" height="500"></canvas>
+            <div class="picker"></div>
+            <button id="spinBtn">Draai</button>
+            <div id="winnerDisplay"></div>
+            <form id="addNameForm">
+                <input type="text" id="nameInput" placeholder="Voer naam in" required>
+                <input type="file" id="imageInput" accept="image/*" required>
+                <button type="submit">Naam toevoegen</button>
+            </form>
+            <ul id="namesList"></ul>
+        </div>
+    </div>
+    <script src="main.js"></script>
