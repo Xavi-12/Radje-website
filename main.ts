@@ -1,193 +1,191 @@
 window.addEventListener('DOMContentLoaded', () => {
-interface WheelEntry {
-    name: string;
-    image: string; // Data URL
+interface Participant {
+  name: string;
+  image: HTMLImageElement;
 }
 
-let entries: WheelEntry[] = [];
-let spinning = false;
-let currentAngle = 0;
-let winnerIndex: number | null = null;
+const canvas = document.getElementById("wheel") as HTMLCanvasElement;
+const ctx = canvas.getContext("2d")!;
+const spinBtn = document.getElementById("spinBtn")!;
+const nameInput = document.getElementById("nameInput") as HTMLInputElement;
+const imageInput = document.getElementById("imageInput") as HTMLInputElement;
+const addNameForm = document.getElementById("addNameForm")!;
+const namesList = document.getElementById("namesList")!;
+const winnerDisplay = document.getElementById("winnerDisplay")!;
+const picker = document.querySelector(".picker")!;
 
-const wheel = document.getElementById('wheel') as HTMLCanvasElement;
-const ctx = wheel.getContext('2d')!;
-const spinBtn = document.getElementById('spinBtn') as HTMLButtonElement;
-const winnerDisplay = document.getElementById('winnerDisplay') as HTMLDivElement;
-const addNameForm = document.getElementById('addNameForm') as HTMLFormElement;
-const nameInput = document.getElementById('nameInput') as HTMLInputElement;
-const imageInput = document.getElementById('imageInput') as HTMLInputElement;
-const namesList = document.getElementById('namesList') as HTMLUListElement;
-const picker = document.querySelector('.picker') as HTMLDivElement;
+let participants: Participant[] = [];
+let isSpinning = false;
+let rotation = 0;
+let spinVelocity = 0;
 
-// Mooie gouden pick boven het wiel
-function updatePicker() {
-    picker.style.left = '50%';
-    picker.style.top = (wheel.offsetTop - 32) + 'px';
-    picker.style.transform = 'translateX(-50%)';
-    picker.style.width = '0';
-    picker.style.height = '0';
-    // Realistische pijl met punt naar beneden, rood met witte rand en schaduw
-    picker.style.borderLeft = '18px solid transparent';
-    picker.style.borderRight = '18px solid transparent';
-    picker.style.borderTop = 'none';
-    picker.style.borderBottom = '36px solid #c0392b'; // Dieprood
-    picker.style.borderRadius = '4px';
-    picker.style.boxShadow = '0 8px 16px rgba(0,0,0,0.18)';
-    picker.style.position = 'absolute';
-    picker.style.zIndex = '2';
-    picker.style.outline = '3px solid white';
-    // Maak de pijl iets breder en korter voor een realistisch effect
-}
-updatePicker();
-window.addEventListener('resize', updatePicker);
+function drawWheel() {
+  const radius = canvas.width / 2;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const sliceAngle = (2 * Math.PI) / participants.length;
 
-function drawWheel(angle = 0) {
-    ctx.clearRect(0, 0, wheel.width, wheel.height);
-    const radius = wheel.width / 2;
-    const centerX = wheel.width / 2;
-    const centerY = wheel.height / 2;
-    const sliceAngle = 2 * Math.PI / entries.length;
+  participants.forEach((participant, index) => {
+    const startAngle = index * sliceAngle + rotation;
+    const endAngle = startAngle + sliceAngle;
 
-    for (let i = 0; i < entries.length; i++) {
-        const startAngle = angle + i * sliceAngle;
-        const endAngle = startAngle + sliceAngle;
+    // Color
+    ctx.beginPath();
+    ctx.moveTo(radius, radius);
+    ctx.arc(radius, radius, radius, startAngle, endAngle);
+    ctx.fillStyle = `hsl(${(index * 360) / participants.length}, 80%, 60%)`;
+    ctx.fill();
+    ctx.closePath();
 
-        // Mooie gradient slices
-        const grad = ctx.createLinearGradient(centerX, centerY, centerX + Math.cos(startAngle) * radius, centerY + Math.sin(startAngle) * radius);
-        grad.addColorStop(0, `hsl(${i * 360 / entries.length}, 80%, 65%)`);
-        grad.addColorStop(1, `hsl(${i * 360 / entries.length + 20}, 70%, 50%)`);
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.closePath();
-        ctx.fillStyle = grad;
-        ctx.fill();
-        ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 2;
-        ctx.stroke();
+    // Text
+    ctx.save();
+    ctx.translate(radius, radius);
+    ctx.rotate(startAngle + sliceAngle / 2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 16px sans-serif";
+    ctx.fillText(participant.name, radius - 10, 5);
+    ctx.restore();
+  });
 
-        // Naam tekst
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(startAngle + sliceAngle / 2);
-        ctx.textAlign = "right";
-        ctx.font = "bold 20px Segoe UI";
-        ctx.fillStyle = "#2d3a4b";
-        ctx.shadowColor = "#fff";
-        ctx.shadowBlur = 4;
-        ctx.fillText(entries[i].name, radius - 30, 10);
-        ctx.restore();
-    }
-}
-
-function getWinnerIndexByAngle(angle: number) {
-    // De pointer staat op 270 graden (3 * Math.PI / 2)
-    const pointerAngle = (3 * Math.PI / 2 - angle + 2 * Math.PI) % (2 * Math.PI);
-    const sliceAngle = 2 * Math.PI / entries.length;
-    let idx = Math.floor(pointerAngle / sliceAngle);
-    // Correctie als pointer precies op de grens valt
-    if (idx >= entries.length) idx = 0;
-    return idx;
+  // Draw picker
+  ctx.beginPath();
+  ctx.moveTo(radius - 10, 0);
+  ctx.lineTo(radius + 10, 0);
+  ctx.lineTo(radius, 20);
+  ctx.fillStyle = "black";
+  ctx.fill();
+  ctx.closePath();
 }
 
 function spinWheel() {
-    if (spinning || entries.length < 2) return;
-    spinning = true;
-    spinBtn.disabled = true;
-    winnerDisplay.textContent = "";
+  if (participants.length === 0 || isSpinning) return;
 
-    // Altijd minimaal 10 tot 16 rondjes, random
-    const spins = Math.floor(Math.random() * 7) + 10; // 10-16 rondjes
-    const randomEndAngle = Math.random() * 2 * Math.PI;
-    let start = currentAngle;
-    let end = randomEndAngle + spins * 2 * Math.PI;
-    let duration = Math.floor(Math.random() * 1200) + 3200; // 3200-4400ms
-    let startTime: number | null = null;
+  isSpinning = true;
+  let spinTime = 0;
+  const maxSpinTime = 4000 + Math.random() * 2000;
+  spinVelocity = (Math.PI * 4) + Math.random() * Math.PI * 2;
+  const start = performance.now();
 
-    function animateWheel(ts: number) {
-        if (!startTime) startTime = ts;
-        let elapsed = ts - startTime;
-        let progress = Math.min(elapsed / duration, 1);
-        let ease = 1 - Math.pow(1 - progress, 4);
-        currentAngle = start + (end - start) * ease;
-        drawWheel(currentAngle);
+  function animate(time: number) {
+    const elapsed = time - start;
+    const t = elapsed / maxSpinTime;
+    const easeOut = 1 - Math.pow(1 - t, 3);
 
-        if (progress < 1) {
-            requestAnimationFrame(animateWheel);
-        } else {
-            spinning = false;
-            spinBtn.disabled = false;
-            // Bepaal de winnaar op basis van de eindhoek
-            winnerIndex = getWinnerIndexByAngle(currentAngle);
-            showWinner();
-        }
+    rotation += spinVelocity * (1 - easeOut) * 0.02;
+    rotation %= 2 * Math.PI;
+    drawWheel();
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      isSpinning = false;
+      pickWinner();
     }
-    requestAnimationFrame(animateWheel);
+  }
+
+  requestAnimationFrame(animate);
 }
 
-function showWinner() {
-    if (winnerIndex === null) return;
-    const winner = entries[winnerIndex];
-    winnerDisplay.innerHTML = `
-        <div>
-            <strong>Winnaar: ${winner.name}</strong><br>
-            <img src="${winner.image}" alt="Foto van ${winner.name}" style="max-width:120px; border-radius:12px; margin-top:10px; box-shadow:0 4px 16px gold;">
-        </div>
-        <div style="margin-top:10px;">
-            <button class="removeBtn" id="removeWinnerBtn">Winnaar verwijderen</button>
-            <button class="removeBtn" id="keepWinnerBtn" style="background:#27ae60; margin-left:8px;">Winnaar houden</button>
-        </div>
-    `;
-    document.getElementById('removeWinnerBtn')!.onclick = () => {
-        entries.splice(winnerIndex!, 1);
-        winnerIndex = null;
-        drawWheel(currentAngle);
-        winnerDisplay.textContent = "";
-        renderNamesList();
-    };
-    document.getElementById('keepWinnerBtn')!.onclick = () => {
-        winnerDisplay.textContent = "";
-        winnerIndex = null;
-    };
+function pickWinner() {
+  const sliceAngle = (2 * Math.PI) / participants.length;
+  const index = participants.length - Math.floor((rotation % (2 * Math.PI)) / sliceAngle) - 1;
+  const winner = participants[index];
+
+  if (!winner) return;
+
+  const container = document.createElement("div");
+  container.className = "winner-popup";
+
+  const nameEl = document.createElement("h2");
+  nameEl.textContent = `🎉 Winnaar: ${winner.name}`;
+
+  const img = document.createElement("img");
+  img.src = winner.image.src;
+  img.style.maxWidth = "200px";
+  img.style.borderRadius = "10px";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.textContent = "Verwijder van het rad";
+  removeBtn.onclick = () => {
+    participants.splice(index, 1);
+    drawWheel();
+    renderList();
+    renderNames();
+    container.remove();
+  };
+
+  const keepBtn = document.createElement("button");
+  keepBtn.textContent = "Laat op het rad";
+  keepBtn.onclick = () => container.remove();
+
+  container.append(nameEl, img, removeBtn, keepBtn);
+  winnerDisplay.innerHTML = "";
+  winnerDisplay.appendChild(container);
 }
 
-function renderNamesList() {
-    namesList.innerHTML = "";
-    entries.forEach((entry, idx) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <img src="${entry.image}" alt="Foto van ${entry.name}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
-            ${entry.name}
-            <button class="removeBtn" data-idx="${idx}">Verwijder</button>
-        `;
-        (li.querySelector('.removeBtn') as HTMLButtonElement)!.onclick = () => {
-            entries.splice(idx, 1);
-            drawWheel(currentAngle);
-            renderNamesList();
-        };
-        namesList.appendChild(li);
-    });
+addNameForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = nameInput.value.trim();
+  const file = imageInput.files?.[0];
+  if (!name || !file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      participants.push({ name, image: img });
+      nameInput.value = "";
+      imageInput.value = "";
+      drawWheel();
+      renderList();
+      renderNames();
+    };
+    img.src = reader.result as string;
+  };
+  reader.readAsDataURL(file);
+});
+
+function renderList() {
+  namesList.innerHTML = "";
+  participants.forEach((p, i) => {
+    const li = document.createElement("li");
+    li.textContent = p.name;
+    namesList.appendChild(li);
+  });
 }
 
-addNameForm.onsubmit = (e) => {
-    e.preventDefault();
-    const name = nameInput.value.trim();
-    const file = imageInput.files?.[0];
-    if (!name || !file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-        entries.push({ name, image: ev.target!.result as string });
-        nameInput.value = "";
-        imageInput.value = "";
-        drawWheel(currentAngle);
-        renderNamesList();
-    };
-    reader.readAsDataURL(file);
-};
+function renderNames() {
+  let previewContainer = document.getElementById("previewContainer");
+  if (!previewContainer) {
+    previewContainer = document.createElement("div");
+    previewContainer.id = "previewContainer";
+    document.querySelector(".container")?.appendChild(previewContainer);
+  }
 
-spinBtn.onclick = spinWheel;
+  previewContainer.innerHTML = "";
+  participants.forEach((p) => {
+    const entry = document.createElement("div");
+    entry.className = "preview-entry";
 
-// Initial draw
+    const img = document.createElement("img");
+    img.src = p.image.src;
+    img.style.width = "40px";
+    img.style.height = "40px";
+    img.style.objectFit = "cover";
+    img.style.borderRadius = "50%";
+
+    const name = document.createElement("span");
+    name.textContent = p.name;
+    name.style.marginLeft = "8px";
+
+    entry.appendChild(img);
+    entry.appendChild(name);
+    previewContainer!.appendChild(entry);
+  });
+}
+
+spinBtn.addEventListener("click", spinWheel);
+
 drawWheel();
-renderNamesList();
+
 });
