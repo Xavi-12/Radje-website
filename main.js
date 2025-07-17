@@ -76,7 +76,13 @@ function spinWheel() {
         else {
             isSpinning = false;
             var finalAngle = angle % 360;
-            var index = Math.floor((finalAngle / 360) * names.length) % names.length;
+            // Pointer staat op 3 uur (rechts), dus 0 graden is rechts.
+            // Het wiel draait met 'angle', maar de sector die bij 0 graden ligt is de winnaar.
+            // Dus: bereken welke sector op 0 graden ligt.
+            var sectorAngle = 360 / names.length;
+            // Draai het wiel terug zodat 0 graden overeenkomt met de pointer
+            var pointerAngle = (360 - (finalAngle % 360)) % 360;
+            var index = Math.floor(pointerAngle / sectorAngle) % names.length;
             showWinnerPopup(names[index], index);
         }
     }
