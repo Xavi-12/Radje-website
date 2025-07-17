@@ -13,6 +13,7 @@ const addNameForm = document.getElementById("addNameForm")!;
 const namesList = document.getElementById("namesList")!;
 const winnerDisplay = document.getElementById("winnerDisplay")!;
 const picker = document.querySelector(".picker")!;
+const previewContainer = document.getElementById("previewContainer")!;
 
 let participants: Participant[] = [];
 let isSpinning = false;
@@ -20,18 +21,20 @@ let rotation = 0;
 let spinVelocity = 0;
 
 function drawWheel() {
+  // Responsive canvas
+  const size = Math.min(canvas.parentElement!.clientWidth, 500);
+  canvas.width = size;
+  canvas.height = size;
   const radius = canvas.width / 2;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (participants.length === 0) {
-    // Teken een cirkel als radje
     ctx.beginPath();
     ctx.arc(radius, radius, radius, 0, 2 * Math.PI);
     ctx.fillStyle = "#e0e0e0";
     ctx.fill();
     ctx.closePath();
 
-    // Placeholder tekst
     ctx.save();
     ctx.font = "bold 20px sans-serif";
     ctx.fillStyle = "#888";
@@ -40,7 +43,6 @@ function drawWheel() {
     ctx.fillText("Voeg namen toe!", radius, radius);
     ctx.restore();
 
-    // Teken picker
     ctx.beginPath();
     ctx.moveTo(radius - 10, 0);
     ctx.lineTo(radius + 10, 0);
@@ -57,7 +59,6 @@ function drawWheel() {
     const startAngle = index * sliceAngle + rotation;
     const endAngle = startAngle + sliceAngle;
 
-    // Color
     ctx.beginPath();
     ctx.moveTo(radius, radius);
     ctx.arc(radius, radius, radius, startAngle, endAngle);
@@ -65,7 +66,6 @@ function drawWheel() {
     ctx.fill();
     ctx.closePath();
 
-    // Text
     ctx.save();
     ctx.translate(radius, radius);
     ctx.rotate(startAngle + sliceAngle / 2);
@@ -76,7 +76,6 @@ function drawWheel() {
     ctx.restore();
   });
 
-  // Draw picker
   ctx.beginPath();
   ctx.moveTo(radius - 10, 0);
   ctx.lineTo(radius + 10, 0);
@@ -90,7 +89,6 @@ function spinWheel() {
   if (participants.length === 0 || isSpinning) return;
 
   isSpinning = true;
-  let spinTime = 0;
   const maxSpinTime = 4000 + Math.random() * 2000;
   spinVelocity = (Math.PI * 4) + Math.random() * Math.PI * 2;
   const start = performance.now();
@@ -117,8 +115,6 @@ function spinWheel() {
 
 function pickWinner() {
   const sliceAngle = (2 * Math.PI) / participants.length;
-  // De picker wijst naar 0 radianen (bovenaan het rad)
-  // Corrigeer de rotatie zodat 0 radianen overeenkomt met het bovenste segment
   let normalizedRotation = (2 * Math.PI - (rotation % (2 * Math.PI))) % (2 * Math.PI);
   const index = Math.floor(normalizedRotation / sliceAngle);
   const winner = participants[index];
@@ -156,7 +152,6 @@ function pickWinner() {
 
   container.append(nameEl, img, removeBtn, keepBtn);
 
-  // Overlay over het rad
   winnerDisplay.innerHTML = "";
   winnerDisplay.appendChild(container);
   winnerDisplay.style.display = "flex";
@@ -194,13 +189,6 @@ function renderList() {
 }
 
 function renderNames() {
-  let previewContainer = document.getElementById("previewContainer");
-  if (!previewContainer) {
-    previewContainer = document.createElement("div");
-    previewContainer.id = "previewContainer";
-    document.querySelector(".container")?.appendChild(previewContainer);
-  }
-
   previewContainer.innerHTML = "";
   participants.forEach((p) => {
     const entry = document.createElement("div");
@@ -219,11 +207,14 @@ function renderNames() {
 
     entry.appendChild(img);
     entry.appendChild(name);
-    previewContainer!.appendChild(entry);
+    previewContainer.appendChild(entry);
   });
 }
 
 spinBtn.addEventListener("click", spinWheel);
+
+// Redraw wheel on resize for responsiveness
+window.addEventListener("resize", drawWheel);
 
 drawWheel();
 

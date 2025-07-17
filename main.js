@@ -8,21 +8,24 @@ window.addEventListener('DOMContentLoaded', function () {
     var namesList = document.getElementById("namesList");
     var winnerDisplay = document.getElementById("winnerDisplay");
     var picker = document.querySelector(".picker");
+    var previewContainer = document.getElementById("previewContainer");
     var participants = [];
     var isSpinning = false;
     var rotation = 0;
     var spinVelocity = 0;
     function drawWheel() {
+        // Responsive canvas
+        var size = Math.min(canvas.parentElement.clientWidth, 500);
+        canvas.width = size;
+        canvas.height = size;
         var radius = canvas.width / 2;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         if (participants.length === 0) {
-            // Teken een cirkel als radje
             ctx.beginPath();
             ctx.arc(radius, radius, radius, 0, 2 * Math.PI);
             ctx.fillStyle = "#e0e0e0";
             ctx.fill();
             ctx.closePath();
-            // Placeholder tekst
             ctx.save();
             ctx.font = "bold 20px sans-serif";
             ctx.fillStyle = "#888";
@@ -30,7 +33,6 @@ window.addEventListener('DOMContentLoaded', function () {
             ctx.textBaseline = "middle";
             ctx.fillText("Voeg namen toe!", radius, radius);
             ctx.restore();
-            // Teken picker
             ctx.beginPath();
             ctx.moveTo(radius - 10, 0);
             ctx.lineTo(radius + 10, 0);
@@ -44,14 +46,12 @@ window.addEventListener('DOMContentLoaded', function () {
         participants.forEach(function (participant, index) {
             var startAngle = index * sliceAngle + rotation;
             var endAngle = startAngle + sliceAngle;
-            // Color
             ctx.beginPath();
             ctx.moveTo(radius, radius);
             ctx.arc(radius, radius, radius, startAngle, endAngle);
             ctx.fillStyle = "hsl(".concat((index * 360) / participants.length, ", 80%, 60%)");
             ctx.fill();
             ctx.closePath();
-            // Text
             ctx.save();
             ctx.translate(radius, radius);
             ctx.rotate(startAngle + sliceAngle / 2);
@@ -61,7 +61,6 @@ window.addEventListener('DOMContentLoaded', function () {
             ctx.fillText(participant.name, radius - 10, 5);
             ctx.restore();
         });
-        // Draw picker
         ctx.beginPath();
         ctx.moveTo(radius - 10, 0);
         ctx.lineTo(radius + 10, 0);
@@ -74,7 +73,6 @@ window.addEventListener('DOMContentLoaded', function () {
         if (participants.length === 0 || isSpinning)
             return;
         isSpinning = true;
-        var spinTime = 0;
         var maxSpinTime = 4000 + Math.random() * 2000;
         spinVelocity = (Math.PI * 4) + Math.random() * Math.PI * 2;
         var start = performance.now();
@@ -97,8 +95,6 @@ window.addEventListener('DOMContentLoaded', function () {
     }
     function pickWinner() {
         var sliceAngle = (2 * Math.PI) / participants.length;
-        // De picker wijst naar 0 radianen (bovenaan het rad)
-        // Corrigeer de rotatie zodat 0 radianen overeenkomt met het bovenste segment
         var normalizedRotation = (2 * Math.PI - (rotation % (2 * Math.PI))) % (2 * Math.PI);
         var index = Math.floor(normalizedRotation / sliceAngle);
         var winner = participants[index];
@@ -129,7 +125,6 @@ window.addEventListener('DOMContentLoaded', function () {
         keepBtn.className = "popup-btn";
         keepBtn.onclick = function () { return container.remove(); };
         container.append(nameEl, img, removeBtn, keepBtn);
-        // Overlay over het rad
         winnerDisplay.innerHTML = "";
         winnerDisplay.appendChild(container);
         winnerDisplay.style.display = "flex";
@@ -165,13 +160,6 @@ window.addEventListener('DOMContentLoaded', function () {
         });
     }
     function renderNames() {
-        var _a;
-        var previewContainer = document.getElementById("previewContainer");
-        if (!previewContainer) {
-            previewContainer = document.createElement("div");
-            previewContainer.id = "previewContainer";
-            (_a = document.querySelector(".container")) === null || _a === void 0 ? void 0 : _a.appendChild(previewContainer);
-        }
         previewContainer.innerHTML = "";
         participants.forEach(function (p) {
             var entry = document.createElement("div");
@@ -191,5 +179,7 @@ window.addEventListener('DOMContentLoaded', function () {
         });
     }
     spinBtn.addEventListener("click", spinWheel);
+    // Redraw wheel on resize for responsiveness
+    window.addEventListener("resize", drawWheel);
     drawWheel();
 });
