@@ -44,15 +44,13 @@ function drawWheel(rotation = 0) {
         ctx.restore();
         startAngle += sliceAngle;
     }
-    // Draw pin (always at top, not rotated)
-    drawPin();
 }
 
 // Draw pin above the wheel (fixed position)
 function drawPin() {
     ctx.save();
-    ctx.translate(wheel.width / 2, 20);
     ctx.beginPath();
+    ctx.translate(wheel.width / 2, 20);
     ctx.moveTo(0, 0);
     ctx.lineTo(-15, -30);
     ctx.lineTo(15, -30);
@@ -65,45 +63,58 @@ function drawPin() {
 // Spin logic
 let spinning = false;
 let angle = 0;
-let angularVelocity = 0;
 let winnerIndex = 0;
+let animationFrame: number;
 
 function spinWheel() {
     if (participants.length === 0 || spinning) return;
     spinning = true;
-    // Randomize final angle anywhere on the wheel
     const extraSpins = Math.floor(Math.random() * 3) + 5; // 5-7 rounds
     const randomOffset = Math.random() * 2 * Math.PI;
     const finalAngle = extraSpins * 2 * Math.PI + randomOffset;
-    angularVelocity = 0.35; // initial speed
-    animateSpin(finalAngle);
+    const duration = 3000; // ms
+    const start = performance.now();
+    const startAngle = angle;
+
+    function animate(now: number) {
+        const elapsed = now - start;
+        if (elapsed < duration) {
+            // Ease out
+            const t = elapsed / duration;
+            angle = startAngle + (finalAngle - startAngle) * easeOutCubic(t);
+            render();
+            animationFrame = requestAnimationFrame(animate);
+        } else {
+            angle = (startAngle + finalAngle) % (2 * Math.PI);
+            spinning = false;
+            render();
+            showWinnerPopup();
+        }
+    }
+    animationFrame = requestAnimationFrame(animate);
 }
 
-function animateSpin(finalAngle: number) {
-    if (angle < finalAngle) {
-        angle += angularVelocity;
-        angularVelocity *= 0.985; // slow down gradually
-        ctx.save();
-        ctx.clearRect(0, 0, wheel.width, wheel.height);
-        ctx.translate(wheel.width / 2, wheel.height / 2);
-        ctx.rotate(angle);
-        ctx.translate(-wheel.width / 2, -wheel.height / 2);
-        drawWheel(0); // wheel rotates, pin stays fixed
-        ctx.restore();
-        requestAnimationFrame(() => animateSpin(finalAngle));
-    } else {
-        spinning = false;
-        angle = finalAngle % (2 * Math.PI);
-        drawWheel(angle); // draw final position
-        showWinnerPopup();
-    }
+// Easing function for smooth animation
+function easeOutCubic(t: number) {
+    return 1 - Math.pow(1 - t, 3);
+}
+
+// Render wheel and pin
+function render() {
+    ctx.save();
+    ctx.clearRect(0, 0, wheel.width, wheel.height);
+    ctx.translate(wheel.width / 2, wheel.height / 2);
+    ctx.rotate(angle);
+    ctx.translate(-wheel.width / 2, -wheel.height / 2);
+    drawWheel(0);
+    ctx.restore();
+    drawPin();
 }
 
 // Determine winner based on where the pin points
 function getWinnerIndex() {
     const n = participants.length;
     const sliceAngle = (2 * Math.PI) / n;
-    // The pin is at 12 o'clock, so calculate which slice is at angle = 3*Math.PI/2
     let normalized = (3 * Math.PI / 2 - angle) % (2 * Math.PI);
     if (normalized < 0) normalized += 2 * Math.PI;
     return Math.floor(normalized / sliceAngle) % n;
@@ -131,7 +142,7 @@ function showWinnerPopup() {
     const removeBtn = document.getElementById('remove-winner-btn');
     removeBtn?.addEventListener('click', () => {
         participants.splice(winnerIndex, 1);
-        drawWheel(angle);
+        render();
         clearTimeout(autoClose);
         popup.remove();
     });
@@ -172,10 +183,10 @@ form.addEventListener('submit', e => {
     photoInput.value = '';
     previewImg.src = '';
     previewImg.style.display = 'none';
-    drawWheel(angle);
+    render();
 });
 
 // Init
-drawWheel(angle);
+render();
 spinBtn.addEventListener('click', spinWheel);
 });
