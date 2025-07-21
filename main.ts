@@ -167,10 +167,10 @@ class SpinningWheel {
             this.ctx.save();
             this.ctx.translate(centerX, centerY);
             this.ctx.rotate(startAngle + anglePerPlayer / 2);
-            this.ctx.textAlign = 'right';
+            this.ctx.textAlign = 'center';
             this.ctx.fillStyle = '#000';
-            this.ctx.font = 'bold 16px Arial';
-            this.ctx.fillText(player.name, radius - 20, 5);
+            this.ctx.font = 'bold 20px Arial';
+            this.ctx.fillText(player.name, radius - 60, 5);
             this.ctx.restore();
         });
     }

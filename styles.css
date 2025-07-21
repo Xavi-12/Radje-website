@@ -46,15 +46,14 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    background: transparent;
     padding: 20px;
 }
 
 #wheel {
     border-radius: 50%;
-    background: #f8f9fa;
+    background: transparent;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
 .pointer {
@@ -212,9 +211,9 @@ main {
 .popup-content {
     background: white;
     border-radius: 20px;
-    padding: 30px;
+    padding: 40px;
     text-align: center;
-    max-width: 400px;
+    max-width: 500px;
     width: 90%;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     animation: popupSlide 0.3s ease-out;
@@ -232,23 +231,24 @@ main {
 }
 
 .winner-info {
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 #winnerImage {
-    width: 120px;
-    height: 120px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 15px;
-    border: 4px solid #ffd700;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    border: 6px solid #ffd700;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
 }
 
 #winnerName {
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    font-weight: bold;
 }
 
 .popup-buttons {

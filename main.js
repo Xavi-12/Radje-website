@@ -127,10 +127,10 @@ window.addEventListener('DOMContentLoaded', function () {
                 _this.ctx.save();
                 _this.ctx.translate(centerX, centerY);
                 _this.ctx.rotate(startAngle + anglePerPlayer / 2);
-                _this.ctx.textAlign = 'right';
+                _this.ctx.textAlign = 'center';
                 _this.ctx.fillStyle = '#000';
-                _this.ctx.font = 'bold 16px Arial';
-                _this.ctx.fillText(player.name, radius - 20, 5);
+                _this.ctx.font = 'bold 20px Arial';
+                _this.ctx.fillText(player.name, radius - 60, 5);
                 _this.ctx.restore();
             });
         };
