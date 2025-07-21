@@ -3,24 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wheel of Names & Images</title>
+  <title>Wheel of Fortune - Spin & Win</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
-    <h1>Tjaafs wheel</h1>
 <body>
-  <div class="wheel-container">
-    <div class="input-section">
+  <div class="app-container">
+    <header class="app-header">
+      <h1 class="app-title">🎯 Wheel of Fortune</h1>
+      <p class="app-subtitle">Add names, spin the wheel, and discover the winner!</p>
+    </header>
 
-      <input id="nameInput" type="text" placeholder="Naam invoeren..." />
-      <input id="imageInput" type="file" accept="image/*" />
-      <button id="addBtn">Voeg toe</button>
+    <main class="main-content">
+      <section class="control-panel">
+        <div class="input-group">
+          <div class="input-field">
+            <label for="nameInput">Name</label>
+            <input id="nameInput" type="text" placeholder="Enter a name..." />
+          </div>
+          <div class="input-field">
+            <label for="imageInput">Image</label>
+            <input id="imageInput" type="file" accept="image/*" />
+          </div>
+          <button id="addBtn" class="btn btn-primary">
+            <span>➕ Add Entry</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="wheel-section">
+        <div class="wheel-container">
+          <canvas id="wheel" width="400" height="400"></canvas>
+          <div class="wheel-center">
+            <div class="wheel-pointer"></div>
+          </div>
+        </div>
+        
+        <button id="spinBtn" class="btn btn-spin">
+          <span>🎲 Spin the Wheel!</span>
+        </button>
+      </section>
+
+      <section class="result-section">
+        <div id="result" class="result-display"></div>
+      </section>
+    </main>
+
+    <!-- Winner Modal -->
+    <div id="winnerModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="winner-title">🎉 Winner!</h2>
+          <button id="closeModal" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="winnerName" class="winner-name"></div>
+          <img id="winnerImage" class="winner-image-modal" />
+          <div class="winner-actions">
+            <button id="keepPlayer" class="btn btn-keep">
+              <span>✅ Keep Player</span>
+            </button>
+            <button id="removePlayer" class="btn btn-remove">
+              <span>❌ Remove Player</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <canvas id="wheel" width="500" height="500"></canvas>
-
-    <button id="spinBtn">Draai het wiel!</button>
-    <div id="result"></div>
-    <img id="winnerImage" />
   </div>
 
   <script type="module" src="main.js"></script>
