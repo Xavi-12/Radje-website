@@ -192,9 +192,9 @@ input[type="file"]:hover {
   border-right: 15px solid transparent;
   border-bottom: 40px solid #ff4757;
   position: absolute;
-  top: -220px;
+  top: -50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -20px);
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
@@ -354,7 +354,8 @@ input[type="file"]:hover {
   }
   
   .wheel-pointer {
-    top: -170px;
+    top: -50%;
+    transform: translate(-50%, -15px);
     border-left-width: 12px;
     border-right-width: 12px;
     border-bottom-width: 30px;

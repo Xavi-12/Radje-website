@@ -14,7 +14,7 @@ const spinBtn = document.getElementById("spinBtn") as HTMLButtonElement;
 const result = document.getElementById("result") as HTMLDivElement;
 const winnerModal = document.getElementById("winnerModal") as HTMLDivElement;
 const winnerName = document.getElementById("winnerName") as HTMLDivElement;
-const winnerImage = document.getElementById("winnerImage") as HTMLImageElement;
+const winnerImageModal = document.getElementById("winnerImageModal") as HTMLImageElement;
 const closeModal = document.getElementById("closeModal") as HTMLButtonElement;
 const keepPlayer = document.getElementById("keepPlayer") as HTMLButtonElement;
 const removePlayer = document.getElementById("removePlayer") as HTMLButtonElement;
@@ -96,7 +96,7 @@ function spinWheel() {
 
   isSpinning = true;
   result.textContent = "";
-  winnerImage.style.display = "none";
+  winnerImageModal.style.display = "none";
 
   const spinAngle = Math.random() * 360 + 360 * 5;
   const duration = 4000;
@@ -123,7 +123,7 @@ function spinWheel() {
 
 function detectWinner() {
   const centerX = canvas.width / 2;
-  const pointerY = 20;
+  const pointerY = 10; // Adjusted for better detection
   const pixel = ctx.getImageData(centerX, pointerY, 1, 1).data;
   const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
 
@@ -138,7 +138,8 @@ function detectWinner() {
 
 function showWinnerModal(winner: Entry) {
   winnerName.textContent = winner.name;
-  winnerImage.src = winner.imageUrl;
+  winnerImageModal.src = winner.imageUrl;
+  winnerImageModal.style.display = 'block';
   winnerModal.classList.add('show');
   
   // Disable body scroll
