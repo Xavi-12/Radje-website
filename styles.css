@@ -54,7 +54,7 @@ main {
     border-radius: 50%;
     background: transparent;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    border: 25px solid #8B4513;
+    border: 20px solid #8B4513;
     width: 520px;
     height: 520px;
     position: relative;
@@ -64,10 +64,10 @@ main {
 #wheel::before {
     content: '';
     position: absolute;
-    top: -25px;
-    left: -25px;
-    right: -25px;
-    bottom: -25px;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
     border-radius: 50%;
     background: 
         radial-gradient(circle at 50% 8%, #FFD700 4px, #B8860B 5px, transparent 6px),
@@ -410,6 +410,7 @@ main {
         font-size: 12px;
     }
 }
+
 
 
 
