@@ -61,9 +61,10 @@ class SpinningWheel {
 
     private getRandomColor(): string {
         const colors = [
-            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-            '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
-            '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2'
+            '#FF1744', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5',
+            '#2196F3', '#03DAC6', '#00BCD4', '#009688', '#4CAF50',
+            '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800',
+            '#FF5722', '#F44336', '#E91E63', '#9C27B0', '#673AB7'
         ];
         return colors[Math.floor(Math.random() * colors.length)];
     }
@@ -208,14 +209,20 @@ class SpinningWheel {
     }
 
     private detectWinner(): void {
-        // Calculate which sector the pointer (top center) is pointing to
-        const pointerAngle = -this.currentAngle + (Math.PI / 2); // Adjust for pointer position
-        const normalizedAngle = ((pointerAngle % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
-        const anglePerPlayer = (2 * Math.PI) / this.players.length;
-        const winnerIndex = Math.floor(normalizedAngle / anglePerPlayer);
+        // Get the color directly under the pointer (top center of canvas)
+        const centerX = this.canvas.width / 2;
+        const pointerY = 10; // Just below the pointer
         
-        this.currentWinner = this.players[winnerIndex];
-        this.showWinnerPopup();
+        const imageData = this.ctx.getImageData(centerX, pointerY, 1, 1);
+        const [r, g, b] = imageData.data;
+        const detectedColor = this.rgbToHex(r, g, b);
+        
+        // Find the player with matching color
+        this.currentWinner = this.players.find(player => player.color === detectedColor) || null;
+        
+        if (this.currentWinner) {
+            this.showWinnerPopup();
+        }
     }
 
     private showWinnerPopup(): void {
@@ -243,6 +250,10 @@ class SpinningWheel {
     private hideWinnerPopup(): void {
         this.winnerPopup.classList.remove('show');
         this.currentWinner = null;
+    }
+
+    private rgbToHex(r: number, g: number, b: number): string {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
     }
 
     // Public method for removing players (called from HTML)
