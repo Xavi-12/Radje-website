@@ -54,7 +54,7 @@ main {
     border-radius: 50%;
     background: transparent;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    border: 15px solid #8B4513;
+    border: 20px solid #8B4513;
     width: 520px;
     height: 520px;
 }
@@ -62,28 +62,52 @@ main {
 .wheel-container::after {
     content: '';
     position: absolute;
-    bottom: -20px;
+    bottom: -40px;
     left: 50%;
     transform: translateX(-50%);
-    width: 60px;
-    height: 40px;
-    background: linear-gradient(180deg, #654321 0%, #4A2C17 100%);
-    border-radius: 0 0 30px 30px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    width: 120px;
+    height: 60px;
+    background: linear-gradient(180deg, #8B4513 0%, #654321 50%, #4A2C17 100%);
+    border-radius: 60px 60px 20px 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    border: 3px solid #654321;
 }
 
 .wheel-container::before {
     content: '';
     position: absolute;
-    bottom: -15px;
+    bottom: -25px;
     left: 50%;
     transform: translateX(-50%);
-    width: 40px;
-    height: 20px;
-    background: #3D1A00;
+    width: 80px;
+    height: 30px;
+    background: #5D4037;
     border-radius: 50%;
     z-index: -1;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
 }
+
+/* Gouden stokjes/spaken */
+.wheel-container .spoke {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 240px;
+    background: linear-gradient(0deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+    transform-origin: center bottom;
+    border-radius: 2px;
+    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
+
+.wheel-container .spoke:nth-child(2) { transform: translate(-50%, -50%) rotate(0deg); }
+.wheel-container .spoke:nth-child(3) { transform: translate(-50%, -50%) rotate(45deg); }
+.wheel-container .spoke:nth-child(4) { transform: translate(-50%, -50%) rotate(90deg); }
+.wheel-container .spoke:nth-child(5) { transform: translate(-50%, -50%) rotate(135deg); }
+.wheel-container .spoke:nth-child(6) { transform: translate(-50%, -50%) rotate(180deg); }
+.wheel-container .spoke:nth-child(7) { transform: translate(-50%, -50%) rotate(225deg); }
+.wheel-container .spoke:nth-child(8) { transform: translate(-50%, -50%) rotate(270deg); }
+.wheel-container .spoke:nth-child(9) { transform: translate(-50%, -50%) rotate(315deg); }
 
 .pointer {
     position: absolute;
@@ -356,4 +380,5 @@ main {
         font-size: 12px;
     }
 }
+
 
