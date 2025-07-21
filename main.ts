@@ -209,19 +209,26 @@ class SpinningWheel {
     }
 
     private detectWinner(): void {
-        // Get the color directly under the pointer (top center of canvas)
-        const centerX = this.canvas.width / 2;
-        const pointerY = 40; // Further down, at the tip of the pointer
+        // Get pixel color at pointer position
+        const pointerX = this.canvas.width / 2;
+        const pointerY = 20;
+        const pixel = this.ctx.getImageData(pointerX, pointerY, 1, 1).data;
+        const rgb = `#${this.toHex(pixel[0])}${this.toHex(pixel[1])}${this.toHex(pixel[2])}`.toUpperCase();
+
+        // Find winner by matching color (ES5 compatible)
+        let winner: Player | null = null;
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i].color.toUpperCase() === rgb) {
+                winner = this.players[i];
+                break;
+            }
+        }
         
-        const imageData = this.ctx.getImageData(centerX, pointerY, 1, 1);
-        const [r, g, b] = imageData.data;
-        const detectedColor = this.rgbToHex(r, g, b);
-        
-        // Find the player with matching color
-        this.currentWinner = this.players.find(player => player.color === detectedColor) || null;
-        
-        if (this.currentWinner) {
+        if (winner) {
+            this.currentWinner = winner;
             this.showWinnerPopup();
+        } else {
+            console.log("Geen winnaar gedetecteerd.");
         }
     }
 
@@ -252,8 +259,9 @@ class SpinningWheel {
         this.currentWinner = null;
     }
 
-    private rgbToHex(r: number, g: number, b: number): string {
-        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+    private toHex(value: number): string {
+        const hex = value.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
     }
 
     // Public method for removing players (called from HTML)

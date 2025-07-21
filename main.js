@@ -163,16 +163,25 @@ window.addEventListener('DOMContentLoaded', function () {
             requestAnimationFrame(animate);
         };
         SpinningWheel.prototype.detectWinner = function () {
-            // Get the color directly under the pointer (top center of canvas)
-            var centerX = this.canvas.width / 2;
-            var pointerY = 40; // Further down, at the tip of the pointer
-            var imageData = this.ctx.getImageData(centerX, pointerY, 1, 1);
-            var _a = imageData.data, r = _a[0], g = _a[1], b = _a[2];
-            var detectedColor = this.rgbToHex(r, g, b);
-            // Find the player with matching color
-            this.currentWinner = this.players.find(function (player) { return player.color === detectedColor; }) || null;
-            if (this.currentWinner) {
+            // Get pixel color at pointer position
+            var pointerX = this.canvas.width / 2;
+            var pointerY = 20;
+            var pixel = this.ctx.getImageData(pointerX, pointerY, 1, 1).data;
+            var rgb = "#".concat(this.toHex(pixel[0])).concat(this.toHex(pixel[1])).concat(this.toHex(pixel[2])).toUpperCase();
+            // Find winner by matching color (ES5 compatible)
+            var winner = null;
+            for (var i = 0; i < this.players.length; i++) {
+                if (this.players[i].color.toUpperCase() === rgb) {
+                    winner = this.players[i];
+                    break;
+                }
+            }
+            if (winner) {
+                this.currentWinner = winner;
                 this.showWinnerPopup();
+            }
+            else {
+                console.log("Geen winnaar gedetecteerd.");
             }
         };
         SpinningWheel.prototype.showWinnerPopup = function () {
@@ -198,8 +207,9 @@ window.addEventListener('DOMContentLoaded', function () {
             this.winnerPopup.classList.remove('show');
             this.currentWinner = null;
         };
-        SpinningWheel.prototype.rgbToHex = function (r, g, b) {
-            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+        SpinningWheel.prototype.toHex = function (value) {
+            var hex = value.toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
         };
         // Public method for removing players (called from HTML)
         SpinningWheel.prototype.removePlayerByIndex = function (index) {
