@@ -54,9 +54,55 @@ main {
     border-radius: 50%;
     background: transparent;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    border: 20px solid #8B4513;
+    border: 25px solid #8B4513;
     width: 520px;
     height: 520px;
+    position: relative;
+}
+
+/* Gouden nagels/stippen op de houten rand */
+#wheel::before {
+    content: '';
+    position: absolute;
+    top: -25px;
+    left: -25px;
+    right: -25px;
+    bottom: -25px;
+    border-radius: 50%;
+    background: 
+        radial-gradient(circle at 50% 5%, #FFD700 3px, transparent 4px),
+        radial-gradient(circle at 85% 15%, #FFD700 3px, transparent 4px),
+        radial-gradient(circle at 95% 50%, #FFD700 3px, transparent 4px),
+        radial-gradient(circle at 85% 85%, #FFD700 3px, transparent 4px),
+        radial-gradient(circle at 50% 95%, #FFD700 3px, transparent 4px),
+        radial-gradient(circle at 15% 85%, #FFD700 3px, transparent 4px),
+        radial-gradient(circle at 5% 50%, #FFD700 3px, transparent 4px),
+        radial-gradient(circle at 15% 15%, #FFD700 3px, transparent 4px);
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Gouden nagels met diepte effect */
+#wheel::after {
+    content: '';
+    position: absolute;
+    top: -25px;
+    left: -25px;
+    right: -25px;
+    bottom: -25px;
+    border-radius: 50%;
+    background: 
+        radial-gradient(circle at 50% 5%, rgba(255,215,0,0.8) 2px, rgba(184,134,11,0.6) 3px, transparent 4px),
+        radial-gradient(circle at 85% 15%, rgba(255,215,0,0.8) 2px, rgba(184,134,11,0.6) 3px, transparent 4px),
+        radial-gradient(circle at 95% 50%, rgba(255,215,0,0.8) 2px, rgba(184,134,11,0.6) 3px, transparent 4px),
+        radial-gradient(circle at 85% 85%, rgba(255,215,0,0.8) 2px, rgba(184,134,11,0.6) 3px, transparent 4px),
+        radial-gradient(circle at 50% 95%, rgba(255,215,0,0.8) 2px, rgba(184,134,11,0.6) 3px, transparent 4px),
+        radial-gradient(circle at 15% 85%, rgba(255,215,0,0.8) 2px, rgba(184,134,11,0.6) 3px, transparent 4px),
+        radial-gradient(circle at 5% 50%, rgba(255,215,0,0.8) 2px, rgba(184,134,11,0.6) 3px, transparent 4px),
+        radial-gradient(circle at 15% 15%, rgba(255,215,0,0.8) 2px, rgba(184,134,11,0.6) 3px, transparent 4px);
+    pointer-events: none;
+    z-index: 1;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
 }
 
 .wheel-container::after {
@@ -380,5 +426,6 @@ main {
         font-size: 12px;
     }
 }
+
 
 
