@@ -12,12 +12,6 @@ const imageInput = document.getElementById("imageInput") as HTMLInputElement;
 const addBtn = document.getElementById("addBtn") as HTMLButtonElement;
 const spinBtn = document.getElementById("spinBtn") as HTMLButtonElement;
 const result = document.getElementById("result") as HTMLDivElement;
-const winnerModal = document.getElementById("winnerModal") as HTMLDivElement;
-const winnerName = document.getElementById("winnerName") as HTMLDivElement;
-const winnerImageModal = document.getElementById("winnerImageModal") as HTMLImageElement;
-const closeModal = document.getElementById("closeModal") as HTMLButtonElement;
-const keepPlayer = document.getElementById("keepPlayer") as HTMLButtonElement;
-const removePlayer = document.getElementById("removePlayer") as HTMLButtonElement;
 
 let entries: Entry[] = [];
 let angle = 0;
@@ -96,7 +90,6 @@ function spinWheel() {
 
   isSpinning = true;
   result.textContent = "";
-  winnerImageModal.style.display = "none";
 
   const spinAngle = Math.random() * 360 + 360 * 5;
   const duration = 4000;
@@ -123,33 +116,207 @@ function spinWheel() {
 
 function detectWinner() {
   const centerX = canvas.width / 2;
-  const pointerY = 10; // Adjusted for better detection
+  const pointerY = 10;
   const pixel = ctx.getImageData(centerX, pointerY, 1, 1).data;
   const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
 
   const winner = entries.find(e => e.color.toUpperCase() === rgb);
   if (winner) {
     currentWinner = winner;
-    showWinnerModal(winner);
+    createWinnerModal(winner);
   } else {
     result.textContent = "🎯 Spin again for better luck!";
   }
 }
 
-function showWinnerModal(winner: Entry) {
-  winnerName.textContent = winner.name;
-  winnerImageModal.src = winner.imageUrl;
-  winnerImageModal.style.display = 'block';
-  winnerModal.classList.add('show');
-  
-  // Disable body scroll
-  document.body.style.overflow = 'hidden';
-}
+function createWinnerModal(winner: Entry) {
+  // Create modal overlay
+  const modalOverlay = document.createElement('div');
+  modalOverlay.className = 'modal-overlay show';
+  modalOverlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+  `;
 
-function hideWinnerModal() {
-  winnerModal.classList.remove('show');
-  document.body.style.overflow = 'auto';
-  currentWinner = null;
+  // Create modal content
+  const modalContent = document.createElement('div');
+  modalContent.style.cssText = `
+    background: white;
+    border-radius: 25px;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9);
+    animation: modalSlideIn 0.3s ease-out forwards;
+    overflow: hidden;
+  `;
+
+  // Create modal header
+  const modalHeader = document.createElement('div');
+  modalHeader.style.cssText = `
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  `;
+
+  const winnerTitle = document.createElement('h2');
+  winnerTitle.textContent = '🎉 Winner!';
+  winnerTitle.style.cssText = `
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+  `;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '&times;';
+  closeBtn.style.cssText = `
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+  `;
+
+  // Create modal body
+  const modalBody = document.createElement('div');
+  modalBody.style.cssText = `
+    padding: 30px 25px;
+    text-align: center;
+  `;
+
+  const winnerName = document.createElement('div');
+  winnerName.textContent = winner.name;
+  winnerName.style.cssText = `
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  `;
+
+  const winnerImage = document.createElement('img');
+  winnerImage.src = winner.imageUrl;
+  winnerImage.style.cssText = `
+    width: 200px;
+    height: 200px;
+    border-radius: 20px;
+    object-fit: cover;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    margin-bottom: 25px;
+    border: 4px solid #f8f9fa;
+  `;
+
+  const winnerActions = document.createElement('div');
+  winnerActions.style.cssText = `
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+  `;
+
+  const keepBtn = document.createElement('button');
+  keepBtn.innerHTML = '<span>✅ Keep Player</span>';
+  keepBtn.style.cssText = `
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    transition: all 0.3s ease;
+  `;
+
+  const removeBtn = document.createElement('button');
+  removeBtn.innerHTML = '<span>❌ Remove Player</span>';
+  removeBtn.style.cssText = `
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    transition: all 0.3s ease;
+  `;
+
+  // Event listeners
+  const closeModal = () => {
+    document.body.removeChild(modalOverlay);
+    document.body.style.overflow = 'auto';
+    currentWinner = null;
+  };
+
+  closeBtn.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) closeModal();
+  });
+
+  keepBtn.addEventListener('click', () => {
+    result.innerHTML = `🎉 <strong>${winner.name} stays in the game!</strong>`;
+    closeModal();
+  });
+
+  removeBtn.addEventListener('click', () => {
+    const index = entries.findIndex(e => e === winner);
+    if (index > -1) {
+      entries.splice(index, 1);
+      drawWheel((angle * Math.PI) / 180);
+      result.innerHTML = `👋 <strong>${winner.name} has been removed!</strong>`;
+    }
+    closeModal();
+  });
+
+  // Assemble modal
+  modalHeader.appendChild(winnerTitle);
+  modalHeader.appendChild(closeBtn);
+  winnerActions.appendChild(keepBtn);
+  winnerActions.appendChild(removeBtn);
+  modalBody.appendChild(winnerName);
+  modalBody.appendChild(winnerImage);
+  modalBody.appendChild(winnerActions);
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+  modalOverlay.appendChild(modalContent);
+
+  // Add to DOM
+  document.body.appendChild(modalOverlay);
+  document.body.style.overflow = 'hidden';
+
+  // Add mobile responsive styles
+  if (window.innerWidth <= 768) {
+    modalContent.style.width = '95vw';
+    modalContent.style.margin = '20px';
+    winnerImage.style.width = '150px';
+    winnerImage.style.height = '150px';
+    winnerActions.style.flexDirection = 'column';
+    keepBtn.style.width = '100%';
+    removeBtn.style.width = '100%';
+  }
 }
 
 function toHex(n: number): string {
@@ -192,35 +359,13 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// Modal event listeners
-closeModal.addEventListener('click', hideWinnerModal);
-
-winnerModal.addEventListener('click', (e) => {
-  if (e.target === winnerModal) {
-    hideWinnerModal();
-  }
-});
-
-keepPlayer.addEventListener('click', () => {
-  result.innerHTML = `🎉 <strong>${currentWinner?.name} stays in the game!</strong>`;
-  hideWinnerModal();
-});
-
-removePlayer.addEventListener('click', () => {
-  if (currentWinner) {
-    const index = entries.findIndex(e => e === currentWinner);
-    if (index > -1) {
-      entries.splice(index, 1);
-      drawWheel((angle * Math.PI) / 180);
-      result.innerHTML = `👋 <strong>${currentWinner.name} has been removed!</strong>`;
-    }
-  }
-  hideWinnerModal();
-});
-
 // Close modal with Escape key
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && winnerModal.classList.contains('show')) {
-    hideWinnerModal();
+  if (e.key === 'Escape') {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+      document.body.removeChild(modal);
+      document.body.style.overflow = 'auto';
+    }
   }
 });
