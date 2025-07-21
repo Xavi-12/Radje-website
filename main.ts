@@ -83,6 +83,8 @@ function drawWheel(currentAngle: number) {
     ctx.fillText(entry.name, radius - 20, 5);
     ctx.restore();
   }
+  
+  // Remove the canvas pointer drawing - we use CSS pointer instead
 }
 
 function spinWheel() {
@@ -116,7 +118,7 @@ function spinWheel() {
 
 function detectWinner() {
   const centerX = canvas.width / 2;
-  const pointerY = 10;
+  const pointerY = 20; // Adjusted for CSS pointer position
   const pixel = ctx.getImageData(centerX, pointerY, 1, 1).data;
   const rgb = `#${toHex(pixel[0])}${toHex(pixel[1])}${toHex(pixel[2])}`.toUpperCase();
 
@@ -132,137 +134,46 @@ function detectWinner() {
 function createWinnerModal(winner: Entry) {
   // Create modal overlay
   const modalOverlay = document.createElement('div');
-  modalOverlay.className = 'modal-overlay show';
-  modalOverlay.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease-out;
-  `;
+  modalOverlay.className = 'modal-overlay';
 
   // Create modal content
   const modalContent = document.createElement('div');
-  modalContent.style.cssText = `
-    background: white;
-    border-radius: 25px;
-    max-width: 90vw;
-    max-height: 90vh;
-    width: 400px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    transform: scale(0.9);
-    animation: modalSlideIn 0.3s ease-out forwards;
-    overflow: hidden;
-  `;
+  modalContent.className = 'modal-content';
 
   // Create modal header
   const modalHeader = document.createElement('div');
-  modalHeader.style.cssText = `
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    padding: 20px 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  `;
+  modalHeader.className = 'modal-header';
 
   const winnerTitle = document.createElement('h2');
   winnerTitle.textContent = '🎉 Winner!';
-  winnerTitle.style.cssText = `
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-  `;
+  winnerTitle.className = 'winner-title';
 
   const closeBtn = document.createElement('button');
   closeBtn.innerHTML = '&times;';
-  closeBtn.style.cssText = `
-    background: none;
-    border: none;
-    color: white;
-    font-size: 2rem;
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.3s ease;
-  `;
+  closeBtn.className = 'close-btn';
 
   // Create modal body
   const modalBody = document.createElement('div');
-  modalBody.style.cssText = `
-    padding: 30px 25px;
-    text-align: center;
-  `;
+  modalBody.className = 'modal-body';
 
   const winnerName = document.createElement('div');
   winnerName.textContent = winner.name;
-  winnerName.style.cssText = `
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 20px;
-  `;
+  winnerName.className = 'winner-name';
 
   const winnerImage = document.createElement('img');
   winnerImage.src = winner.imageUrl;
-  winnerImage.style.cssText = `
-    width: 200px;
-    height: 200px;
-    border-radius: 20px;
-    object-fit: cover;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    margin-bottom: 25px;
-    border: 4px solid #f8f9fa;
-  `;
+  winnerImage.className = 'winner-image-modal';
 
   const winnerActions = document.createElement('div');
-  winnerActions.style.cssText = `
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
-  `;
+  winnerActions.className = 'winner-actions';
 
   const keepBtn = document.createElement('button');
   keepBtn.innerHTML = '<span>✅ Keep Player</span>';
-  keepBtn.style.cssText = `
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    background: linear-gradient(135deg, #2ecc71, #27ae60);
-    color: white;
-    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
-    transition: all 0.3s ease;
-  `;
+  keepBtn.className = 'btn btn-keep';
 
   const removeBtn = document.createElement('button');
   removeBtn.innerHTML = '<span>❌ Remove Player</span>';
-  removeBtn.style.cssText = `
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    color: white;
-    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-    transition: all 0.3s ease;
-  `;
+  removeBtn.className = 'btn btn-remove';
 
   // Event listeners
   const closeModal = () => {
@@ -306,17 +217,6 @@ function createWinnerModal(winner: Entry) {
   // Add to DOM
   document.body.appendChild(modalOverlay);
   document.body.style.overflow = 'hidden';
-
-  // Add mobile responsive styles
-  if (window.innerWidth <= 768) {
-    modalContent.style.width = '95vw';
-    modalContent.style.margin = '20px';
-    winnerImage.style.width = '150px';
-    winnerImage.style.height = '150px';
-    winnerActions.style.flexDirection = 'column';
-    keepBtn.style.width = '100%';
-    removeBtn.style.width = '100%';
-  }
 }
 
 function toHex(n: number): string {
@@ -349,7 +249,8 @@ spinBtn.addEventListener("click", spinWheel);
 // Add responsive canvas sizing
 function resizeCanvas() {
   const container = canvas.parentElement!;
-  const size = Math.min(container.clientWidth - 40, 400);
+  const containerWidth = container.clientWidth;
+  const size = Math.min(containerWidth - 60, 400); // More padding
   canvas.width = size;
   canvas.height = size;
   drawWheel((angle * Math.PI) / 180);
