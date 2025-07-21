@@ -45,11 +45,15 @@ window.addEventListener('DOMContentLoaded', function () {
             ];
             // Get colors that are already used
             var usedColors = this.players.map(function (player) { return player.color; });
-            // Filter out used colors
-            var availableColors = colors.filter(function (color) { return !usedColors.includes(color); });
+            // Filter out used colors (ES5 compatible)
+            var availableColors = colors.filter(function (color) {
+                return usedColors.indexOf(color) === -1;
+            });
             // If all colors are used, generate a random hex color
             if (availableColors.length === 0) {
-                return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0').toUpperCase();
+                var hex = Math.floor(Math.random() * 16777215).toString(16);
+                var paddedHex = ('000000' + hex).slice(-6);
+                return '#' + paddedHex.toUpperCase();
             }
             // Return random available color
             return availableColors[Math.floor(Math.random() * availableColors.length)];
