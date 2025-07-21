@@ -53,7 +53,7 @@ main {
 #wheel {
     border-radius: 50%;
     background: transparent;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0);
 }
 
 .pointer {
