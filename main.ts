@@ -211,7 +211,7 @@ class SpinningWheel {
     private detectWinner(): void {
         // Get the color directly under the pointer (top center of canvas)
         const centerX = this.canvas.width / 2;
-        const pointerY = 10; // Just below the pointer
+        const pointerY = 40; // Further down, at the tip of the pointer
         
         const imageData = this.ctx.getImageData(centerX, pointerY, 1, 1);
         const [r, g, b] = imageData.data;
