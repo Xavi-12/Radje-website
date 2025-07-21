@@ -1,55 +1,53 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wheel of Fortune - Spin & Win</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tjaafs Radje</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-container">
-    <header class="app-header">
-      <h1 class="app-title">🎯 Wheel of Fortune</h1>
-      <p class="app-subtitle">Add names, spin the wheel, and discover the winner!</p>
-    </header>
+    <div class="container">
+        <header>
+            <h1>🎯 Tjaafs Radje</h1>
+            <p>Voeg spelers toe en draai het rad!</p>
+        </header>
 
-    <main class="main-content">
-      <section class="control-panel">
-        <div class="input-group">
-          <div class="input-field">
-            <label for="nameInput">Name</label>
-            <input id="nameInput" type="text" placeholder="Enter a name..." />
-          </div>
-          <div class="input-field">
-            <label for="imageInput">Image</label>
-            <input id="imageInput" type="file" accept="image/*" />
-          </div>
-          <button id="addBtn" class="btn btn-primary">
-            <span>➕ Add Entry</span>
-          </button>
+        <main>
+            <div class="wheel-container">
+                <canvas id="wheel" width="500" height="500"></canvas>
+                <div class="pointer"></div>
+                <button id="spinBtn" class="spin-button" disabled>
+                    <span>DRAAI</span>
+                </button>
+            </div>
+
+            <div class="controls">
+                <div class="input-group">
+                    <input type="text" id="nameInput" placeholder="Voer naam in..." maxlength="20">
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    <button id="imageBtn" class="image-button">📷</button>
+                    <button id="addBtn" class="add-button">Toevoegen</button>
+                </div>
+                <div class="players-list" id="playersList"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Winner Popup -->
+    <div id="winnerPopup" class="popup-overlay">
+        <div class="popup-content">
+            <div class="winner-info">
+                <img id="winnerImage" src="" alt="Winner">
+                <h2 id="winnerName">Winnaar!</h2>
+            </div>
+            <div class="popup-buttons">
+                <button id="removeWinnerBtn" class="remove-btn">🗑️ Verwijderen</button>
+                <button id="keepWinnerBtn" class="keep-btn">✅ Behouden</button>
+            </div>
         </div>
-      </section>
+    </div>
 
-      <section class="wheel-section">
-        <div class="wheel-container">
-          <canvas id="wheel" width="400" height="400"></canvas>
-          <div class="wheel-center">
-            <div class="wheel-pointer"></div>
-          </div>
-        </div>
-        
-        <button id="spinBtn" class="btn btn-spin">
-          <span>🎲 Spin the Wheel!</span>
-        </button>
-      </section>
-
-      <section class="result-section">
-        <div id="result" class="result-display"></div>
-      </section>
-    </main>
-  </div>
-
-  <script type="module" src="main.js"></script>
+    <script src="main.ts"></script>
 </body>
 </html>

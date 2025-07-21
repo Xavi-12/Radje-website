@@ -1,113 +1,206 @@
-var canvas = document.getElementById("wheel");
-var ctx = canvas.getContext("2d");
-var nameInput = document.getElementById("nameInput");
-var imageInput = document.getElementById("imageInput");
-var addBtn = document.getElementById("addBtn");
-var spinBtn = document.getElementById("spinBtn");
-var result = document.getElementById("result");
-var winnerImage = document.getElementById("winnerImage");
-var entries = [];
-var angle = 0;
-var isSpinning = false;
-function getRandomColor() {
-    var letters = "0123456789ABCDEF";
-    var color = "#";
-    for (var i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
-function drawWheel(currentAngle) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    var total = entries.length;
-    var arc = (2 * Math.PI) / total;
-    for (var i = 0; i < total; i++) {
-        var entry = entries[i];
-        var startAngle = arc * i + currentAngle;
-        var endAngle = startAngle + arc;
-        ctx.beginPath();
-        ctx.fillStyle = entry.color;
-        ctx.moveTo(250, 250);
-        ctx.arc(250, 250, 250, startAngle, endAngle);
-        ctx.fill();
-        // Tekst op sector
-        ctx.save();
-        ctx.translate(250, 250);
-        ctx.rotate(startAngle + arc / 2);
-        ctx.textAlign = "right";
-        ctx.fillStyle = "#000";
-        ctx.font = "18px Arial";
-        ctx.fillText(entry.name, 230, 10);
-        ctx.restore();
-    }
-    ctx.fillStyle = "#000";
-    ctx.beginPath();
-    ctx.moveTo(250, 0);
-    ctx.lineTo(240, 20);
-    ctx.lineTo(260, 20);
-    ctx.fill();
-}
-function spinWheel() {
-    if (isSpinning || entries.length === 0)
-        return;
-    isSpinning = true;
-    result.textContent = "";
-    winnerImage.style.display = "none";
-    var spinAngle = Math.random() * 360 + 360 * 5;
-    var duration = 4000;
-    var start = performance.now();
-    var initial = angle;
-    function animate(now) {
-        var elapsed = now - start;
-        var progress = Math.min(elapsed / duration, 1);
-        var eased = 1 - Math.pow(1 - progress, 3);
-        angle = initial + eased * spinAngle;
-        drawWheel((angle * Math.PI) / 180);
-        if (progress < 1) {
-            requestAnimationFrame(animate);
+window.addEventListener('DOMContentLoaded', function () {
+    var SpinningWheel = /** @class */ (function () {
+        function SpinningWheel() {
+            this.players = [];
+            this.currentAngle = 0;
+            this.isSpinning = false;
+            this.currentWinner = null;
+            this.initializeElements();
+            this.setupEventListeners();
+            this.drawWheel();
         }
-        else {
-            isSpinning = false;
-            detectWinner();
-        }
-    }
-    requestAnimationFrame(animate);
-}
-function detectWinner() {
-    var pointerX = 250;
-    var pointerY = 30;
-    var pixel = ctx.getImageData(pointerX, pointerY, 1, 1).data;
-    var rgb = "#".concat(toHex(pixel[0])).concat(toHex(pixel[1])).concat(toHex(pixel[2])).toUpperCase();
-    var winner = entries.find(function (e) { return e.color.toUpperCase() === rgb; });
-    if (winner) {
-        result.textContent = "\uD83C\uDF89 Winnaar: ".concat(winner.name);
-    }
-    else {
-        result.textContent = "Geen winnaar gedetecteerd.";
-    }
-}
-function toHex(n) {
-    return n.toString(16).padStart(2, '0');
-}
-addBtn.addEventListener("click", function () {
-    var _a;
-    var name = nameInput.value.trim();
-    var file = (_a = imageInput.files) === null || _a === void 0 ? void 0 : _a[0];
-    if (!name || !file)
-        return;
-    var reader = new FileReader();
-    reader.onload = function () {
-        var imageUrl = reader.result;
-        var newEntry = {
-            name: name,
-            color: getRandomColor(),
-            imageUrl: imageUrl
+        SpinningWheel.prototype.initializeElements = function () {
+            this.canvas = document.getElementById('wheel');
+            this.ctx = this.canvas.getContext('2d');
+            this.nameInput = document.getElementById('nameInput');
+            this.imageInput = document.getElementById('imageInput');
+            this.imageBtn = document.getElementById('imageBtn');
+            this.addBtn = document.getElementById('addBtn');
+            this.spinBtn = document.getElementById('spinBtn');
+            this.playersList = document.getElementById('playersList');
+            this.winnerPopup = document.getElementById('winnerPopup');
+            this.winnerImage = document.getElementById('winnerImage');
+            this.winnerName = document.getElementById('winnerName');
+            this.removeWinnerBtn = document.getElementById('removeWinnerBtn');
+            this.keepWinnerBtn = document.getElementById('keepWinnerBtn');
         };
-        entries.push(newEntry);
-        nameInput.value = "";
-        imageInput.value = "";
-        drawWheel((angle * Math.PI) / 180);
-    };
-    reader.readAsDataURL(file);
+        SpinningWheel.prototype.setupEventListeners = function () {
+            var _this = this;
+            this.imageBtn.addEventListener('click', function () { return _this.imageInput.click(); });
+            this.addBtn.addEventListener('click', function () { return _this.addPlayer(); });
+            this.spinBtn.addEventListener('click', function () { return _this.spinWheel(); });
+            this.removeWinnerBtn.addEventListener('click', function () { return _this.removeWinner(); });
+            this.keepWinnerBtn.addEventListener('click', function () { return _this.keepWinner(); });
+            this.nameInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter')
+                    _this.addPlayer();
+            });
+        };
+        SpinningWheel.prototype.getRandomColor = function () {
+            var colors = [
+                '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+                '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+                '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2'
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        };
+        SpinningWheel.prototype.addPlayer = function () {
+            var _this = this;
+            var _a;
+            var name = this.nameInput.value.trim();
+            var file = (_a = this.imageInput.files) === null || _a === void 0 ? void 0 : _a[0];
+            if (!name || !file) {
+                alert('Voer een naam in en selecteer een afbeelding!');
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var _a;
+                var newPlayer = {
+                    name: name,
+                    color: _this.getRandomColor(),
+                    imageUrl: (_a = e.target) === null || _a === void 0 ? void 0 : _a.result
+                };
+                _this.players.push(newPlayer);
+                _this.nameInput.value = '';
+                _this.imageInput.value = '';
+                _this.updatePlayersList();
+                _this.drawWheel();
+                _this.updateSpinButton();
+            };
+            reader.readAsDataURL(file);
+        };
+        SpinningWheel.prototype.removePlayer = function (index) {
+            this.players.splice(index, 1);
+            this.updatePlayersList();
+            this.drawWheel();
+            this.updateSpinButton();
+        };
+        SpinningWheel.prototype.updatePlayersList = function () {
+            var _this = this;
+            this.playersList.innerHTML = '';
+            this.players.forEach(function (player, index) {
+                var playerItem = document.createElement('div');
+                playerItem.className = 'player-item';
+                playerItem.style.borderLeftColor = player.color;
+                playerItem.innerHTML = "\n                <img src=\"".concat(player.imageUrl, "\" alt=\"").concat(player.name, "\" class=\"player-avatar\">\n                <span class=\"player-name\">").concat(player.name, "</span>\n                <button class=\"remove-player\" onclick=\"wheel.removePlayerByIndex(").concat(index, ")\">\u00D7</button>\n            ");
+                _this.playersList.appendChild(playerItem);
+            });
+        };
+        SpinningWheel.prototype.updateSpinButton = function () {
+            this.spinBtn.disabled = this.players.length < 2;
+        };
+        SpinningWheel.prototype.drawWheel = function () {
+            var _this = this;
+            var centerX = this.canvas.width / 2;
+            var centerY = this.canvas.height / 2;
+            var radius = Math.min(centerX, centerY) - 10;
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            if (this.players.length === 0) {
+                this.ctx.fillStyle = '#f8f9fa';
+                this.ctx.beginPath();
+                this.ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                this.ctx.fill();
+                this.ctx.fillStyle = '#666';
+                this.ctx.font = '20px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Voeg spelers toe!', centerX, centerY);
+                return;
+            }
+            var anglePerPlayer = (2 * Math.PI) / this.players.length;
+            this.players.forEach(function (player, index) {
+                var startAngle = (anglePerPlayer * index) + _this.currentAngle;
+                var endAngle = startAngle + anglePerPlayer;
+                // Draw sector
+                _this.ctx.beginPath();
+                _this.ctx.fillStyle = player.color;
+                _this.ctx.moveTo(centerX, centerY);
+                _this.ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                _this.ctx.closePath();
+                _this.ctx.fill();
+                // Draw border
+                _this.ctx.strokeStyle = '#fff';
+                _this.ctx.lineWidth = 3;
+                _this.ctx.stroke();
+                // Draw text
+                _this.ctx.save();
+                _this.ctx.translate(centerX, centerY);
+                _this.ctx.rotate(startAngle + anglePerPlayer / 2);
+                _this.ctx.textAlign = 'right';
+                _this.ctx.fillStyle = '#000';
+                _this.ctx.font = 'bold 16px Arial';
+                _this.ctx.fillText(player.name, radius - 20, 5);
+                _this.ctx.restore();
+            });
+        };
+        SpinningWheel.prototype.spinWheel = function () {
+            var _this = this;
+            if (this.isSpinning || this.players.length < 2)
+                return;
+            this.isSpinning = true;
+            this.spinBtn.disabled = true;
+            var spinAngle = Math.random() * 360 + 360 * 5; // 5+ rotations
+            var duration = 4000;
+            var startTime = performance.now();
+            var initialAngle = this.currentAngle;
+            var animate = function (currentTime) {
+                var elapsed = currentTime - startTime;
+                var progress = Math.min(elapsed / duration, 1);
+                // Easing function for smooth deceleration
+                var eased = 1 - Math.pow(1 - progress, 3);
+                _this.currentAngle = initialAngle + (eased * spinAngle * Math.PI / 180);
+                _this.drawWheel();
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+                else {
+                    _this.isSpinning = false;
+                    _this.spinBtn.disabled = false;
+                    _this.detectWinner();
+                }
+            };
+            requestAnimationFrame(animate);
+        };
+        SpinningWheel.prototype.detectWinner = function () {
+            // Calculate which sector the pointer (top center) is pointing to
+            var pointerAngle = -this.currentAngle + (Math.PI / 2); // Adjust for pointer position
+            var normalizedAngle = ((pointerAngle % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
+            var anglePerPlayer = (2 * Math.PI) / this.players.length;
+            var winnerIndex = Math.floor(normalizedAngle / anglePerPlayer);
+            this.currentWinner = this.players[winnerIndex];
+            this.showWinnerPopup();
+        };
+        SpinningWheel.prototype.showWinnerPopup = function () {
+            if (!this.currentWinner)
+                return;
+            this.winnerImage.src = this.currentWinner.imageUrl;
+            this.winnerName.textContent = "\uD83C\uDF89 ".concat(this.currentWinner.name, " Wint! \uD83C\uDF89");
+            this.winnerPopup.classList.add('show');
+        };
+        SpinningWheel.prototype.removeWinner = function () {
+            if (!this.currentWinner)
+                return;
+            var index = this.players.indexOf(this.currentWinner);
+            if (index > -1) {
+                this.removePlayer(index);
+            }
+            this.hideWinnerPopup();
+        };
+        SpinningWheel.prototype.keepWinner = function () {
+            this.hideWinnerPopup();
+        };
+        SpinningWheel.prototype.hideWinnerPopup = function () {
+            this.winnerPopup.classList.remove('show');
+            this.currentWinner = null;
+        };
+        // Public method for removing players (called from HTML)
+        SpinningWheel.prototype.removePlayerByIndex = function (index) {
+            this.removePlayer(index);
+        };
+        return SpinningWheel;
+    }());
+    // Initialize the wheel when the page loads
+    var wheel = new SpinningWheel();
+    // Make wheel globally accessible for HTML onclick events
+    window.wheel = wheel;
 });
-spinBtn.addEventListener("click", spinWheel);
