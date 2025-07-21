@@ -38,9 +38,10 @@ window.addEventListener('DOMContentLoaded', function () {
         };
         SpinningWheel.prototype.getRandomColor = function () {
             var colors = [
-                '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
-                '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
-                '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2'
+                '#FF1744', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5',
+                '#2196F3', '#03DAC6', '#00BCD4', '#009688', '#4CAF50',
+                '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800',
+                '#FF5722', '#F44336', '#E91E63', '#9C27B0', '#673AB7'
             ];
             return colors[Math.floor(Math.random() * colors.length)];
         };
@@ -162,13 +163,17 @@ window.addEventListener('DOMContentLoaded', function () {
             requestAnimationFrame(animate);
         };
         SpinningWheel.prototype.detectWinner = function () {
-            // Calculate which sector the pointer (top center) is pointing to
-            var pointerAngle = -this.currentAngle + (Math.PI / 2); // Adjust for pointer position
-            var normalizedAngle = ((pointerAngle % (2 * Math.PI)) + (2 * Math.PI)) % (2 * Math.PI);
-            var anglePerPlayer = (2 * Math.PI) / this.players.length;
-            var winnerIndex = Math.floor(normalizedAngle / anglePerPlayer);
-            this.currentWinner = this.players[winnerIndex];
-            this.showWinnerPopup();
+            // Get the color directly under the pointer (top center of canvas)
+            var centerX = this.canvas.width / 2;
+            var pointerY = 40; // Further down, at the tip of the pointer
+            var imageData = this.ctx.getImageData(centerX, pointerY, 1, 1);
+            var _a = imageData.data, r = _a[0], g = _a[1], b = _a[2];
+            var detectedColor = this.rgbToHex(r, g, b);
+            // Find the player with matching color
+            this.currentWinner = this.players.find(function (player) { return player.color === detectedColor; }) || null;
+            if (this.currentWinner) {
+                this.showWinnerPopup();
+            }
         };
         SpinningWheel.prototype.showWinnerPopup = function () {
             if (!this.currentWinner)
@@ -192,6 +197,9 @@ window.addEventListener('DOMContentLoaded', function () {
         SpinningWheel.prototype.hideWinnerPopup = function () {
             this.winnerPopup.classList.remove('show');
             this.currentWinner = null;
+        };
+        SpinningWheel.prototype.rgbToHex = function (r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
         };
         // Public method for removing players (called from HTML)
         SpinningWheel.prototype.removePlayerByIndex = function (index) {
