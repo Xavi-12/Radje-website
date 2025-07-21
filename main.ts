@@ -66,7 +66,20 @@ class SpinningWheel {
             '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800',
             '#FF5722', '#F44336', '#E91E63', '#9C27B0', '#673AB7'
         ];
-        return colors[Math.floor(Math.random() * colors.length)];
+        
+        // Get colors that are already used
+        const usedColors = this.players.map(player => player.color);
+        
+        // Filter out used colors
+        const availableColors = colors.filter(color => !usedColors.includes(color));
+        
+        // If all colors are used, generate a random hex color
+        if (availableColors.length === 0) {
+            return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase();
+        }
+        
+        // Return random available color
+        return availableColors[Math.floor(Math.random() * availableColors.length)];
     }
 
     private addPlayer(): void {
